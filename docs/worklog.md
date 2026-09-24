@@ -5,12 +5,12 @@
 ## 현재 상태
 
 - 목표: 한국어 상품 검색 품질을 같은 데이터와 질의에서 비교하는 검색·백엔드 포트폴리오.
-- 현재 단계: H0 개발·검색 평가 하네스 완료, M1 구현 대기. 실제 검색 API·Elasticsearch 색인은 아직 미구현.
+- 현재 단계: H0와 M1-01 버전·실행 계약 완료, M1-02 엔진 기동 대기. 실제 검색 API·Elasticsearch 색인은 아직 미구현.
 - M0 데이터: 가상 상품 50개와 개발 시나리오 30개. 사람의 관련성 판정 재검토는 대기.
 - 기존 스캐폴드: Java 21, Spring Boot 4.1.1, Gradle 9.7.1. 이 버전을 변경하지 않고 하네스를 추가한다.
-- 검색 엔진·Nori·공식 Java Client 버전: 미결정. M1에서 호환성을 확인한다.
+- 검색 엔진·Nori·공식 Java Client 버전: ES·Nori 9.4.7 + Java Client·Rest5 9.4.5 선정. [실행 계약](search-engine-setup.md)에 근거를 기록했으며 실제 엔진 기동·연결 검증은 M1-02~03에서 수행한다.
 - 개발 방식: 기능·버그·동작 변경은 테스트를 먼저 작성하는 TDD(Red → Green → Refactor)로 진행한다.
-- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 선행 조건·검증·완료 기준이 있는 작은 단위로 구분했다. 구현은 아직 시작하지 않았다.
+- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 작은 단위로 구분했다. M1-01 문서·환경 계약 작업에 착수했으며 제품 기능 구현은 아직 시작하지 않았다.
 
 ## H0 · 하네스 완료
 
@@ -114,22 +114,38 @@
 
 - 사용자 요청: 현재까지 준비한 내용을 커밋하고 푸시한다.
 - 이슈: [#1](https://github.com/letter333/commerce-search-lab/issues/1). 기존 모든 상태의 이슈·PR을 조회해 없음을 확인한 뒤 등록했다. 기존 작업의 작성 시점과 이번 전달 이슈 등록 시점을 구분한다.
-- 작업 브랜치: `codex/issue-1-development-foundation`. 대상: `letter333/commerce-search-lab`의 `main`. PR: [#2](https://github.com/letter333/commerce-search-lab/pull/2), OPEN·미머지. 이슈는 열린 상태다.
+- 작업 브랜치: `codex/issue-1-development-foundation`. 대상: `letter333/commerce-search-lab`의 `main`. PR: [#2](https://github.com/letter333/commerce-search-lab/pull/2), MERGED. 이슈 #1은 CLOSED / COMPLETED 상태다.
 - 포함 범위: 기존 staged 기획·시드와 현재 작업 트리의 Java/Gradle 골격, 시드 검사·평가 도구, 계약·상세 계획·스킬·Git 템플릿·민감정보 제외 규칙. 기존 staged 기획의 개인 경로는 이미 수정된 작업 트리본을 반영한다.
 - 검증 근거: 위 실행 환경 점검에서 `check --rerun-tasks`로 118개 통과를 확인했으며 이후 제품/테스트/빌드 코드는 바뀌지 않았다. 이번 전달은 기존 검증 결과와 최종 index 일치, 문서·스킬·제외 규칙을 점검한다. 관찰하지 않은 Red 이력은 추가하지 않는다.
 - 독립 검토: 후보 32개 파일의 민감정보·산출물 검토와 하네스/문서 범위 검토에서 차단 사항은 없었다. `gradlew`는 새 Unix checkout의 실행을 위해 index에 실행 모드 `100755`로 포함한다.
 - 작성자: 기존 초기 커밋과 인증 계정에 대응하는 GitHub 비공개 이메일을 이번 커밋 명령에만 적용한다. 전역/로컬 Git 작성자 설정은 변경하지 않는다.
-- 전달 점검: origin fetch/push 저장소 일치, 원격 `main` 최신 상태와 로컬 HEAD 일치, 추가 push refspec·mirror·별도 pushRemote 없음 확인. 머지는 이번 요청 범위에 포함하지 않는다.
+- 전달 점검: origin fetch/push 저장소 일치, 당시 원격 `main`과 로컬 HEAD 일치, 추가 push refspec·mirror·별도 pushRemote 없음 확인. 최초 커밋·푸시 요청에는 머지를 포함하지 않았으며, 이후 별도 머지 요청을 받아 아래와 같이 처리했다.
 - 최종 index: 검토한 32개 경로 모두 작업 트리와 내용이 같고, `gradlew` 실행 모드 `100755`를 확인했다. 개인 절대 경로와 제한된 비밀 패턴 후보·추적된 제외 대상은 없었다. 문서 링크·이슈 템플릿 메타데이터·스킬 4개의 형식 검사와 `git diff --cached --check`를 통과했다.
-- 전달 결과: 초기 기준선 커밋 `43341237a48e57a4ce9e0b759e30b157f2e2f0d7`을 작업 브랜치에 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR을 재조회한 뒤 PR #2 하나를 생성했으며, 본문의 `Closes #1`로 머지 후 종료 대상을 명시했다. 후속 기록 갱신은 같은 이슈·브랜치·PR에 반영한다. 실제 머지·이슈 종료는 아직 수행하지 않았다.
+- 전달 결과: 초기 기준선 커밋 `43341237a48e57a4ce9e0b759e30b157f2e2f0d7`을 작업 브랜치에 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR을 재조회한 뒤 PR #2 하나를 생성했으며, 본문의 `Closes #1`로 머지 후 종료 대상을 명시했다. 전달 기록 커밋 `c3dfe2acc561871455678e09d2dd6576c39223c1`도 같은 PR에 반영했다.
+- 후속 머지: 사용자 지시로 2026-09-25 00:52:13 KST에 PR #2를 `main`으로 머지했다. 기존 두 커밋을 유지하는 merge commit은 `5c328794b2a9b835f101dee11dbb2d0c3202dff0`이다. 실제 MERGED 상태·시각·대상 브랜치와 `origin/main` 포함을 확인했다.
+- 이슈 종료: #1은 2026-09-25 00:52:14 KST에 자동 종료됐으며 CLOSED / COMPLETED 상태를 확인하고 완료 기록을 갱신했다. 중복 종료 명령은 실행하지 않았다.
+- 머지 검증/보존: GitGuardian 검사 SUCCESS, 검토한 PR head와 기존 테스트 대상 코드 일치, 머지 결과 tree와 PR head tree 일치를 확인했다. 새 코드 변경이 없어 테스트를 반복하지 않았다. 로컬 미커밋 M1 계획 파일 3개가 원격 머지 동안 보존됐는지 해시로 확인한 뒤 이 기록과 계획의 현재 상태만 갱신했다.
 
-## 다음 작업 · M1-01 버전 조합과 실행 계약 확정
+## M1-01 · 버전 조합과 실행 계약 확정
 
-- 목적: 한 번의 문서화된 절차로 검색 엔진을 실행하고 재현 가능한 baseline 구현을 시작한다.
-- 착수 전: Git 전달 스킬로 M1-01 이슈와 기존 PR을 조회하고 이슈가 없으면 먼저 등록한다. 실제 이슈 URL·작업 브랜치를 이 기록에 연결한다. 현재 M1-01 이슈/PR은 이 작업에서 생성하지 않았다.
-- 완료 기준: 기존 JDK·Boot·Gradle 유지, ES·Nori·공식 Java Client 후보 조합과 공식 호환 근거, 로컬 실행 요구와 검증할 상태 조건 기록. 실제 엔진 기동·클라이언트 연결·통합 테스트 격리는 상세 계획의 M1-02~M1-04에서 이어간다.
-- 먼저 준비할 검증: 버전·엔진 상태·Nori 설치 확인 계약과 실행 가능한 점검을 정한 뒤 실행 환경을 구성한다. 카탈로그 로더·API 등 동작 구현부터는 실패 테스트 확인을 선행한다.
-- 구현 순서: 환경 고정 → 카탈로그 로더·입력 검증 → Nori 토큰 확인·명시적 매핑 → 안정 ID Bulk 적재 → baseline·필터 API → baseline 평가 저장.
+- 세부계획: [M1-01 실행 순서와 완료 기준](m1-01-plan.md). 계획 작성 당시 H0 PR #2와 이슈 #1은 OPEN이었으며 계획 문서만 작성했다. 이후 H0 머지와 사용자 작업 시작 지시를 받아 M1-01에 착수했다.
+- 현재 기반: 최신 `origin/main`의 `5c328794b2a9b835f101dee11dbb2d0c3202dff0`. 이슈 [#3](https://github.com/letter333/commerce-search-lab/issues/3)을 등록하고 `codex/issue-3-search-engine-contract`에서 작업한다. 기존 미커밋 계획 3개 파일은 브랜치 전환 전후 해시가 같아 보존을 확인했다.
+- 계획 검증: 공식 Elastic·Spring Boot 자료의 호환성·전송/JSON 의존성·플러그인·Docker 조건을 확인해 근거 링크를 연결했다. 12개 체크리스트 순서, 문서 링크·앵커·공백, 기존 101개 구현 작업 ID 유지와 `git diff --check`를 확인했다. 독립 검토에서 전달/머지와 후속 작업 진입 조건을 분리했다. 문서 작업으로 Gradle 테스트는 재실행하지 않았다.
+- 결과 문서: [검색 엔진 버전과 로컬 실행 계약](search-engine-setup.md). ES·Nori 9.4.7, Boot가 관리하는 Java Client·Rest5 9.4.5, 명시적 Jackson3JsonpMapper를 선정했다. 서버 후속 patch 반영과 기존 앱 버전 유지가 근거다.
+- 의존성 관찰: 기존 JDK 21과 캐시로 `dependencies --configuration runtimeClasspath`, `dependencies --configuration testRuntimeClasspath`, `dependencyInsight --dependency jackson-databind --configuration testRuntimeClasspath`를 각각 `--offline --no-daemon`으로 실행해 모두 성공했다. runtime/testRuntime의 Jackson 3.1.5를 확인했고 현재 ES Client·Rest5는 없다. Client POM과 Boot BOM 비교의 하향/상향 예상은 실제 추가 후 resolve 결과와 구분해 기록했다.
+- 환경 관찰: Docker Client/Engine 28.0.1, Compose v2.33.1-desktop.1, Linux x86_64, CPU 20개·메모리 약 11.6GiB, 조회 시 9200/9300 LISTEN 없음. WSL `vm.max_map_count=262144`; 프로젝트 권장 기준 1048576 적용은 M1-02 후속이며 현재 값을 이유로 기동 실패를 주장하지 않는다.
+- 실행 계약: 단일 노드·호스트 loopback 9200, HTTP/transport TLS와 인증 유지, Git 제외 파일로 비밀번호 주입, 컨테이너 2GiB·자동 힙, 데이터 named volume·인증서 보존, 도달성/실제 readiness와 실패 조건 분리. 구체적인 값·명령과 공식 근거는 결과 문서에 있다.
+- 검증 상태: 문서 링크·앵커·공백·101개 작업 ID 유지, 선정 버전 표기와 PowerShell 명령 구문 검사, 조사 산출물·개인키·비밀번호 경로의 Git 제외를 통과했다. 버전/의존성과 실행 계약의 독립 검토를 마쳤으며 인증서 ZIP 출력과 최종 파일 배치 경로를 명확히 했다. 기존 제품/테스트/빌드/시드와 index는 변경하지 않았고 새 동작 테스트나 반복 `check`를 실행하지 않았다. 이전 118개 통과를 새 엔진·Client 검증으로 표시하지 않는다.
+- 미검증/전달: 이미지 pull·빌드·컨테이너 기동·인증서/비밀번호 생성·커널 변경·Client 의존성 추가·실제 검색은 실행하지 않았다. PR 미생성·미머지, 이슈 #3 OPEN. 이번 작업의 커밋·푸시는 아직 수행하지 않았다.
+- 임시 조사 산출물: `build/m1-01/runtime-dependencies.txt`, `test-runtime-dependencies.txt`, `jackson-insight.txt`, `dependency-summary.json`. 모두 Git 제외 대상이며 실제 검색 결과가 아니다.
+
+## 다음 작업 · M1-02 Nori 포함 검색 엔진 기동
+
+- 목적/완료 기준: [실행 계약](search-engine-setup.md)의 ES·Nori 9.4.7 이미지를 Compose로 실행하고, 인증/TLS·정확한 버전·Nori 설치·단일 노드 readiness·재기동 보존을 실제로 확인한다.
+- 착수 전: M1-02 이슈와 모든 상태의 기존 PR을 조회·등록하고 독립 브랜치/PR로 관리한다. 실제 기동 전에 구성을 검사할 명령과 기대 결과를 먼저 준비한다.
+- 준비할 파일: `infra/elasticsearch/Dockerfile`, `compose.yaml`, 비밀값 없는 환경 예시와 인증서 입력 설정. 실제 비밀번호·개인키는 `.local/` 등 Git 제외 경로에만 둔다.
+- 선행 환경: 기동 직전 포트와 Docker 상태를 재확인하고, WSL의 권장 `vm.max_map_count` 적용 방법·영향을 확인해 조정한다. 일반 종료에 볼륨 삭제를 포함하지 않는다.
+- 후속 경계: Client 실제 연결과 의존성 graph 검증은 M1-03, 테스트 인덱스 격리는 M1-04, 실제 Nori 토큰은 M1-09다.
 - API는 [평가 계약](evaluation-contract.md)에 맞춘다. 변경이 필요하면 실행기·계약·테스트를 함께 갱신한다.
 - 데이터 관련성은 사람이 재검토한 뒤 검토자·일자·변경 근거를 기록한다. 자동 시드 검사만으로 M0를 완료 처리하지 않는다.
 - 기존에 한 항목으로 적었던 M1-01 실행 환경 고정을 세분화했다. 이후 구현은 [상세 계획의 작업 ID](implementation-plan.md)를 사용하며 실제 결과는 이 작업 기록에 남긴다.
@@ -144,3 +160,5 @@
 | 2026-09-24 | 제안 선택 평가는 명시적 옵션으로 분리 | 원문 자동 대체와 평가 점수 혼합 방지 |
 | 2026-09-24 | 실제 착수 전 이슈 등록, 이슈당 PR 최대 하나, 실제 머지 후 이슈 종료 | 사용자 지정 작업 흐름 |
 | 2026-09-24 | Conventional Commits, 한국어 요약과 실제 이슈의 Refs 참조 | 사용자 선택 |
+| 2026-09-25 | ES·Nori 9.4.7 + Java Client·Rest5 9.4.5, 명시적 Jackson3JsonpMapper | 서버 patch 수정 반영, Boot 관리 버전과 기존 Jackson 3 사용 유지. 실제 연결은 M1-03 검증 |
+| 2026-09-25 | 단일 노드 loopback·TLS·비밀번호 파일 주입, 컨테이너 2GiB·자동 힙 | 로컬 개발 재현 조건 확정. 실제 기동/자원 적합성은 M1-02 검증 |
