@@ -15,7 +15,7 @@
 ./gradlew.bat check
 ```
 
-macOS/Linux에서는 같은 인수를 `./gradlew`에 전달한다. 실행 권한이 없으면 `sh ./gradlew check`로 실행한다. 현재 빌드에 기록된 버전은 Java 21, Spring Boot 4.1.1, Gradle 9.7.1이다. 검색 엔진·Nori·Java Client 호환 조합은 M1에서 확정한다.
+macOS/Linux에서는 같은 인수를 `./gradlew`에 전달한다. 실행 권한이 없으면 `sh ./gradlew check`로 실행한다. 현재 빌드에 기록된 버전은 Java 21, Spring Boot 4.1.1, Gradle 9.7.1이다. M1-01에서 ES·Nori 9.4.7과 Java Client·Rest5 9.4.5를 선정했다. 공식 근거와 인증/TLS·메모리·상태 판정은 [검색 엔진 실행 계약](search-engine-setup.md)을 따른다. 실제 엔진 기동은 M1-02, Client 의존성 적용·연결 검증은 M1-03에서 수행한다.
 
 ## 구성과 검증 수준
 
