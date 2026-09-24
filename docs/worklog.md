@@ -114,13 +114,14 @@
 
 - 사용자 요청: 현재까지 준비한 내용을 커밋하고 푸시한다.
 - 이슈: [#1](https://github.com/letter333/commerce-search-lab/issues/1). 기존 모든 상태의 이슈·PR을 조회해 없음을 확인한 뒤 등록했다. 기존 작업의 작성 시점과 이번 전달 이슈 등록 시점을 구분한다.
-- 작업 브랜치: `codex/issue-1-development-foundation`. 대상: `letter333/commerce-search-lab`의 `main`. PR 상태: 푸시 후 생성 예정, 미머지. 이슈는 열린 상태다.
+- 작업 브랜치: `codex/issue-1-development-foundation`. 대상: `letter333/commerce-search-lab`의 `main`. PR: [#2](https://github.com/letter333/commerce-search-lab/pull/2), OPEN·미머지. 이슈는 열린 상태다.
 - 포함 범위: 기존 staged 기획·시드와 현재 작업 트리의 Java/Gradle 골격, 시드 검사·평가 도구, 계약·상세 계획·스킬·Git 템플릿·민감정보 제외 규칙. 기존 staged 기획의 개인 경로는 이미 수정된 작업 트리본을 반영한다.
 - 검증 근거: 위 실행 환경 점검에서 `check --rerun-tasks`로 118개 통과를 확인했으며 이후 제품/테스트/빌드 코드는 바뀌지 않았다. 이번 전달은 기존 검증 결과와 최종 index 일치, 문서·스킬·제외 규칙을 점검한다. 관찰하지 않은 Red 이력은 추가하지 않는다.
 - 독립 검토: 후보 32개 파일의 민감정보·산출물 검토와 하네스/문서 범위 검토에서 차단 사항은 없었다. `gradlew`는 새 Unix checkout의 실행을 위해 index에 실행 모드 `100755`로 포함한다.
 - 작성자: 기존 초기 커밋과 인증 계정에 대응하는 GitHub 비공개 이메일을 이번 커밋 명령에만 적용한다. 전역/로컬 Git 작성자 설정은 변경하지 않는다.
 - 전달 점검: origin fetch/push 저장소 일치, 원격 `main` 최신 상태와 로컬 HEAD 일치, 추가 push refspec·mirror·별도 pushRemote 없음 확인. 머지는 이번 요청 범위에 포함하지 않는다.
 - 최종 index: 검토한 32개 경로 모두 작업 트리와 내용이 같고, `gradlew` 실행 모드 `100755`를 확인했다. 개인 절대 경로와 제한된 비밀 패턴 후보·추적된 제외 대상은 없었다. 문서 링크·이슈 템플릿 메타데이터·스킬 4개의 형식 검사와 `git diff --cached --check`를 통과했다.
+- 전달 결과: 초기 기준선 커밋 `43341237a48e57a4ce9e0b759e30b157f2e2f0d7`을 작업 브랜치에 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR을 재조회한 뒤 PR #2 하나를 생성했으며, 본문의 `Closes #1`로 머지 후 종료 대상을 명시했다. 후속 기록 갱신은 같은 이슈·브랜치·PR에 반영한다. 실제 머지·이슈 종료는 아직 수행하지 않았다.
 
 ## 다음 작업 · M1-01 버전 조합과 실행 계약 확정
 
