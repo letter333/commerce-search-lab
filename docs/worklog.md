@@ -136,7 +136,8 @@
 - 환경 관찰: Docker Client/Engine 28.0.1, Compose v2.33.1-desktop.1, Linux x86_64, CPU 20개·메모리 약 11.6GiB, 조회 시 9200/9300 LISTEN 없음. WSL `vm.max_map_count=262144`; 프로젝트 권장 기준 1048576 적용은 M1-02 후속이며 현재 값을 이유로 기동 실패를 주장하지 않는다.
 - 실행 계약: 단일 노드·호스트 loopback 9200, HTTP/transport TLS와 인증 유지, Git 제외 파일로 비밀번호 주입, 컨테이너 2GiB·자동 힙, 데이터 named volume·인증서 보존, 도달성/실제 readiness와 실패 조건 분리. 구체적인 값·명령과 공식 근거는 결과 문서에 있다.
 - 검증 상태: 문서 링크·앵커·공백·101개 작업 ID 유지, 선정 버전 표기와 PowerShell 명령 구문 검사, 조사 산출물·개인키·비밀번호 경로의 Git 제외를 통과했다. 버전/의존성과 실행 계약의 독립 검토를 마쳤으며 인증서 ZIP 출력과 최종 파일 배치 경로를 명확히 했다. 기존 제품/테스트/빌드/시드와 index는 변경하지 않았고 새 동작 테스트나 반복 `check`를 실행하지 않았다. 이전 118개 통과를 새 엔진·Client 검증으로 표시하지 않는다.
-- 미검증/전달: 이미지 pull·빌드·컨테이너 기동·인증서/비밀번호 생성·커널 변경·Client 의존성 추가·실제 검색은 실행하지 않았다. PR 미생성·미머지, 이슈 #3 OPEN. 이번 작업의 커밋·푸시는 아직 수행하지 않았다.
+- 미검증/전달: 이미지 pull·빌드·컨테이너 기동·인증서/비밀번호 생성·커널 변경·Client 의존성 추가·실제 검색은 실행하지 않았다. 사용자 전달 요청에 따라 문서 5개를 커밋·푸시하고 [PR #4](https://github.com/letter333/commerce-search-lab/pull/4)를 생성했다. base `main`, head `codex/issue-3-search-engine-contract`. PR OPEN·미머지, 이슈 #3 OPEN이다.
+- 전달 검증: 본문 커밋 `abea9fa1affafc600437d225b8908acd50c5a653`의 원격 SHA 일치, 문서 5개와 최종 index 일치, 링크·앵커·PowerShell 구문·공백·민감정보 제외를 확인했다. 초기 PR 생성 요청은 GitHub 오류를 반환해 모든 PR·이슈 연결을 재조회했고, 미생성을 확인한 뒤 REST API로 PR #4 하나를 생성했다. 후속 전달 기록은 같은 브랜치/PR에 반영한다.
 - 임시 조사 산출물: `build/m1-01/runtime-dependencies.txt`, `test-runtime-dependencies.txt`, `jackson-insight.txt`, `dependency-summary.json`. 모두 Git 제외 대상이며 실제 검색 결과가 아니다.
 
 ## 다음 작업 · M1-02 Nori 포함 검색 엔진 기동
