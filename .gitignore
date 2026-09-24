@@ -1,0 +1,84 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Local environment and credentials ###
+.env
+.env.*
+*.env
+*.env.*
+.envrc
+# Only a root template with empty values or placeholders may be shared.
+!/.env.example
+.git-credentials
+.secrets/
+secrets/
+credentials/
+credentials.json
+credentials-*.json
+service-account*.json
+*-service-account.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+/gradle.properties
+/local.properties
+
+### Local Spring configuration, including backup copies ###
+application-local*.properties*
+application-local*.yml*
+application-local*.yaml*
+application-secret*.properties*
+application-secret*.yml*
+application-secret*.yaml*
+
+### Local logs and runtime output ###
+*.log
+*.log.*
+*.jsonl
+logs/
+.local/
+/runtime/
+# Only reviewed evaluation evidence may use this exception.
+!/docs/results/**/runs.jsonl
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/

@@ -1,0 +1,1082 @@
+{
+  "schema_version": "0.1",
+  "dataset_id": "queries-dev-v0.1",
+  "catalog_id": "catalog-v0.1",
+  "purpose": "30개 모두 개발용 시나리오 및 기대값 초안. 실측 결과나 최종 성능 평가셋이 아니다.",
+  "judgment_provenance": "기획 단계에서 정의한 속성 조건으로 50개 상품의 적합 ID를 지정했다. 구현 전 사람의 재검토가 필요하다.",
+  "evaluation_rules": [
+    "같은 intent_group은 개발/최종 평가 분할을 넘나들지 않는다.",
+    "오타 제안 사례는 원문 결과와 제안을 명시적으로 선택한 뒤의 결과를 분리해 기록한다.",
+    "제안 선택 후 결과는 실제 사용자의 선택률이나 무조건 적용되는 검색 개선을 의미하지 않는다.",
+    "정답이 없는 3개 질의는 Hit@5 및 MRR 평균에서 제외하고 별도 평가한다.",
+    "초기 관련성은 이진 판정이다. nDCG 실험은 별도 등급 판정 후 시행한다.",
+    "정상어 24개에 대한 오제안율, 오타/한영 6개에 대한 제안 정확도 및 제안 커버리지를 따로 측정한다."
+  ],
+  "cases": [
+    {
+      "id": "Q001",
+      "intent_group": "sweat_all",
+      "type": "category",
+      "split": "development",
+      "request": {
+        "q": "맨투맨",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "맨투맨"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P001",
+          "P002",
+          "P003",
+          "P004",
+          "P005",
+          "P006",
+          "P007",
+          "P008",
+          "P009",
+          "P010"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q002",
+      "intent_group": "sweat_black",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "블랙 맨투맨",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "맨투맨",
+        "color": "블랙"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P001",
+          "P006",
+          "P009"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q003",
+      "intent_group": "sweat_fleece",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "기모 맨투맨",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "맨투맨",
+        "lining": "기모"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P003",
+          "P006",
+          "P009"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q004",
+      "intent_group": "sweat_overfit",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "오버핏 맨투맨",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "맨투맨",
+        "fit": "오버핏"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P002",
+          "P004",
+          "P006",
+          "P008",
+          "P010"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q005",
+      "intent_group": "hood_all",
+      "type": "category",
+      "split": "development",
+      "request": {
+        "q": "후드티",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P012",
+          "P013",
+          "P014",
+          "P015",
+          "P016",
+          "P017",
+          "P018",
+          "P019",
+          "P020"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q006",
+      "intent_group": "hood_black",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "블랙 후드티",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티",
+        "color": "블랙"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P016",
+          "P019"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q007",
+      "intent_group": "hood_raon",
+      "type": "brand_category",
+      "split": "development",
+      "request": {
+        "q": "라온웨어 후드티",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티",
+        "brand": "라온웨어"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P016"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q008",
+      "intent_group": "hood_budget",
+      "type": "filter",
+      "split": "development",
+      "request": {
+        "q": "후드티",
+        "filters": {
+          "price_max": 40000
+        },
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티",
+        "price_max": 40000
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P012",
+          "P016"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q009",
+      "intent_group": "shirt_white",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "화이트 셔츠",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "셔츠",
+        "color": "화이트"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P022",
+          "P028"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q010",
+      "intent_group": "shirt_linen",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "린넨 셔츠",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "셔츠",
+        "material": "린넨"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P023",
+          "P025",
+          "P027",
+          "P030"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q011",
+      "intent_group": "knit_wool",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "울 니트",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "니트",
+        "material_contains": "울"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P031",
+          "P033",
+          "P034",
+          "P036",
+          "P037",
+          "P039",
+          "P040"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "이 시드에서는 울 혼방도 적합 상품으로 판정한다."
+    },
+    {
+      "id": "Q012",
+      "intent_group": "tee_black_short",
+      "type": "attribute",
+      "split": "development",
+      "request": {
+        "q": "블랙 반팔 티셔츠",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "티셔츠",
+        "color": "블랙",
+        "sleeve": "반팔"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P041",
+          "P046"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "블랙 긴팔 상품 P049는 부적합."
+    },
+    {
+      "id": "Q013",
+      "intent_group": "sku_sw001",
+      "type": "protected_sku",
+      "split": "development",
+      "request": {
+        "q": "SW-001",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "sku": "SW-001"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P001"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q014",
+      "intent_group": "brand_monolit",
+      "type": "protected_brand",
+      "split": "development",
+      "request": {
+        "q": "MONOLIT",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "brand_en": "MONOLIT"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P002",
+          "P007",
+          "P012",
+          "P017",
+          "P022",
+          "P027",
+          "P032",
+          "P037",
+          "P042",
+          "P047"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q015",
+      "intent_group": "hood_black",
+      "type": "normalization",
+      "split": "development",
+      "request": {
+        "q": "  블랙   후드티  ",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티",
+        "color": "블랙"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P016",
+          "P019"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q016",
+      "intent_group": "sweat_all",
+      "type": "typo",
+      "split": "development",
+      "request": {
+        "q": "맨투먼",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "맨투맨"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P001",
+          "P002",
+          "P003",
+          "P004",
+          "P005",
+          "P006",
+          "P007",
+          "P008",
+          "P009",
+          "P010"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "suggest_only",
+          "acceptable_suggestions": [
+            "맨투맨"
+          ],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "after_explicit_suggestion_acceptance",
+        "also_report_original_query_metrics": true
+      },
+      "note": ""
+    },
+    {
+      "id": "Q017",
+      "intent_group": "hood_all",
+      "type": "typo",
+      "split": "development",
+      "request": {
+        "q": "후드티이",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P012",
+          "P013",
+          "P014",
+          "P015",
+          "P016",
+          "P017",
+          "P018",
+          "P019",
+          "P020"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "suggest_only",
+          "acceptable_suggestions": [
+            "후드티"
+          ],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "after_explicit_suggestion_acceptance",
+        "also_report_original_query_metrics": true
+      },
+      "note": ""
+    },
+    {
+      "id": "Q018",
+      "intent_group": "shirt_all",
+      "type": "typo",
+      "split": "development",
+      "request": {
+        "q": "셔트",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "셔츠"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P021",
+          "P022",
+          "P023",
+          "P024",
+          "P025",
+          "P026",
+          "P027",
+          "P028",
+          "P029",
+          "P030"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "suggest_only",
+          "acceptable_suggestions": [
+            "셔츠"
+          ],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "after_explicit_suggestion_acceptance",
+        "also_report_original_query_metrics": true
+      },
+      "note": "사전 기반 개발 예시. 실제 사용자 의도라고 단정하지 않는다."
+    },
+    {
+      "id": "Q019",
+      "intent_group": "knit_all",
+      "type": "typo",
+      "split": "development",
+      "request": {
+        "q": "니트으",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "니트"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P031",
+          "P032",
+          "P033",
+          "P034",
+          "P035",
+          "P036",
+          "P037",
+          "P038",
+          "P039",
+          "P040"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "suggest_only",
+          "acceptable_suggestions": [
+            "니트"
+          ],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "after_explicit_suggestion_acceptance",
+        "also_report_original_query_metrics": true
+      },
+      "note": ""
+    },
+    {
+      "id": "Q020",
+      "intent_group": "hood_all",
+      "type": "keyboard_layout",
+      "split": "development",
+      "request": {
+        "q": "gnemxl",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P012",
+          "P013",
+          "P014",
+          "P015",
+          "P016",
+          "P017",
+          "P018",
+          "P019",
+          "P020"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "suggest_only",
+          "acceptable_suggestions": [
+            "후드티"
+          ],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "after_explicit_suggestion_acceptance",
+        "also_report_original_query_metrics": true
+      },
+      "note": ""
+    },
+    {
+      "id": "Q021",
+      "intent_group": "sweat_all",
+      "type": "keyboard_layout",
+      "split": "development",
+      "request": {
+        "q": "aosxnaos",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "맨투맨"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P001",
+          "P002",
+          "P003",
+          "P004",
+          "P005",
+          "P006",
+          "P007",
+          "P008",
+          "P009",
+          "P010"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "suggest_only",
+          "acceptable_suggestions": [
+            "맨투맨"
+          ],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "after_explicit_suggestion_acceptance",
+        "also_report_original_query_metrics": true
+      },
+      "note": ""
+    },
+    {
+      "id": "Q022",
+      "intent_group": "hood_all",
+      "type": "alias",
+      "split": "development",
+      "request": {
+        "q": "후디",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P012",
+          "P013",
+          "P014",
+          "P015",
+          "P016",
+          "P017",
+          "P018",
+          "P019",
+          "P020"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "별칭 확장으로 처리하며 오타로 표시하지 않는다."
+    },
+    {
+      "id": "Q023",
+      "intent_group": "hood_black",
+      "type": "alias",
+      "split": "development",
+      "request": {
+        "q": "검정 후드티",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티",
+        "color": "블랙"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P011",
+          "P016",
+          "P019"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "검정과 블랙을 색상 별칭으로 연결한다."
+    },
+    {
+      "id": "Q024",
+      "intent_group": "shirt_white",
+      "type": "alias",
+      "split": "development",
+      "request": {
+        "q": "흰색 셔츠",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "셔츠",
+        "color": "화이트"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P022",
+          "P028"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q025",
+      "intent_group": "knit_all",
+      "type": "alias",
+      "split": "development",
+      "request": {
+        "q": "스웨터",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "니트"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P031",
+          "P032",
+          "P033",
+          "P034",
+          "P035",
+          "P036",
+          "P037",
+          "P038",
+          "P039",
+          "P040"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "이 카탈로그의 니트는 스웨터형 상의로 한정한다. 모든 니트웨어의 보편적 동의어라는 뜻은 아니다."
+    },
+    {
+      "id": "Q026",
+      "intent_group": "sku_sw001",
+      "type": "protected_sku",
+      "split": "development",
+      "request": {
+        "q": "sw-001",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "sku": "SW-001"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P001"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "코드 대소문자 정규화는 교정 제안으로 세지 않는다."
+    },
+    {
+      "id": "Q027",
+      "intent_group": "brand_raon",
+      "type": "protected_brand",
+      "split": "development",
+      "request": {
+        "q": "라온웨어",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "brand": "라온웨어"
+      },
+      "expected": {
+        "relevant_product_ids": [
+          "P001",
+          "P006",
+          "P011",
+          "P016",
+          "P021",
+          "P026",
+          "P031",
+          "P036",
+          "P041",
+          "P046"
+        ],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": false,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": ""
+    },
+    {
+      "id": "Q028",
+      "intent_group": "absent_category",
+      "type": "no_answer",
+      "split": "development",
+      "request": {
+        "q": "패딩",
+        "filters": {},
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "패딩"
+      },
+      "expected": {
+        "relevant_product_ids": [],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": true,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "보유하지 않은 카테고리. 관련 없는 상의를 억지로 반환하지 않는다."
+    },
+    {
+      "id": "Q029",
+      "intent_group": "absent_price",
+      "type": "no_answer",
+      "split": "development",
+      "request": {
+        "q": "후드티",
+        "filters": {
+          "price_max": 1000
+        },
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티",
+        "price_max": 1000
+      },
+      "expected": {
+        "relevant_product_ids": [],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": true,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "가격 제한을 자동으로 완화하지 않는다."
+    },
+    {
+      "id": "Q030",
+      "intent_group": "absent_color",
+      "type": "no_answer",
+      "split": "development",
+      "request": {
+        "q": "후드티",
+        "filters": {
+          "color": "핑크"
+        },
+        "page": 1,
+        "size": 10
+      },
+      "information_need": {
+        "category": "후드티",
+        "color": "핑크"
+      },
+      "expected": {
+        "relevant_product_ids": [],
+        "judgment_scope": "All 50 products in catalog-v0.1; binary relevance only.",
+        "expected_zero_results": true,
+        "correction": {
+          "policy": "no_spelling_suggestion",
+          "acceptable_suggestions": [],
+          "auto_apply": false
+        },
+        "retrieval_evaluation_stage": "original_request",
+        "also_report_original_query_metrics": false
+      },
+      "note": "색상 필터를 자동으로 완화하지 않는다."
+    }
+  ]
+}
