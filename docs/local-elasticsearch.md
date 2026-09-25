@@ -1,6 +1,6 @@
 # 로컬 Elasticsearch 실행
 
-M1-02는 [실행 계약](search-engine-setup.md)의 Elasticsearch·Nori 9.4.7을 실행한다. Java Client 연결은 M1-03이다. 아래 명령은 Windows PowerShell에서 저장소 루트를 기준으로 실행한다. IntelliJ의 프로젝트·Gradle JDK는 기존 Java 21을 사용한다.
+M1-02는 [실행 계약](search-engine-setup.md)의 Elasticsearch·Nori 9.4.7을 실행한다. M1-03의 앱 연결은 [Java Client 안내](java-client-setup.md)를 따른다. 아래 명령은 Windows PowerShell에서 저장소 루트를 기준으로 실행한다. IntelliJ의 프로젝트·Gradle JDK는 기존 Java 21을 사용한다.
 
 ## 1. 호스트 확인
 

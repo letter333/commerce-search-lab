@@ -21,8 +21,9 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("co.elastic.clients:elasticsearch-java:9.4.5")
+	implementation("tools.jackson.core:jackson-databind")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("tools.jackson.core:jackson-databind")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -32,10 +33,44 @@ tasks.withType<Test> {
 
 tasks.test {
 	useJUnitPlatform {
-		excludeTags("seed")
+		excludeTags("seed", "elasticsearch")
 	}
 	inputs.files("docs/catalog-50.json", "docs/search-scenarios-30.json")
 }
+
+val integrationTest = tasks.register<Test>("integrationTest") {
+	group = "verification"
+	description = "Checks the configured client against a real Elasticsearch engine."
+	testClassesDirs = sourceSets.test.get().output.classesDirs
+	classpath = sourceSets.test.get().runtimeClasspath
+	useJUnitPlatform {
+		includeTags("elasticsearch")
+	}
+	// Engine state is external to Gradle's input snapshot.
+	outputs.upToDateWhen { false }
+	outputs.cacheIf { false }
+	failOnNoDiscoveredTests = true
+}
+
+val verifyIntegrationTestExecution = tasks.register("verifyIntegrationTestExecution") {
+	description = "Rejects integration verification without an actual, non-skipped test run."
+	doLast {
+		val test = integrationTest.get()
+		check(test.state.executed && !test.state.noSource && !test.state.skipped) {
+			"integrationTest did not execute; NO-SOURCE/skipped tasks are not verification."
+		}
+		val reports = fileTree(test.reports.junitXml.outputLocation) { include("TEST-*.xml") }
+		val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+		factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+		val executed = reports.files.sumOf {
+			val suite = factory.newDocumentBuilder().parse(it).documentElement
+			suite.getAttribute("tests").toInt() - suite.getAttribute("skipped").toInt()
+		}
+		check(executed > 0) { "integrationTest must execute real engine tests; empty/skipped suites are not verification." }
+	}
+}
+
+integrationTest.configure { finalizedBy(verifyIntegrationTestExecution) }
 
 val verifySeeds = tasks.register<Test>("verifySeeds") {
 	group = "verification"
