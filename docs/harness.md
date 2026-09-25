@@ -6,7 +6,7 @@
 
 기본 개발 환경은 IntelliJ이며, IDE의 프로젝트·Gradle 실행에 JDK 21을 사용한다. 시스템 `JAVA_HOME` 설정을 IntelliJ 개발의 선행 조건으로 두지 않는다. Gradle은 저장소의 Wrapper를 사용한다. 최초 실행에는 배포본·Maven 의존성 다운로드가 필요하며 캐시가 준비된 환경에서는 `--offline`을 사용할 수 있다.
 
-Elasticsearch·Nori의 이미지 빌드·인증서 준비·기동·검증·종료는 [로컬 실행 안내](local-elasticsearch.md)를 따른다. 기본 `check`는 엔진 없이 실행하며 실제 엔진 검증과 결과를 구분한다.
+Elasticsearch·Nori의 이미지 빌드·인증서 준비·기동·검증·종료는 [로컬 실행 안내](local-elasticsearch.md)를 따른다. 앱의 TLS·인증 설정과 `integrationTest`는 [Java Client 안내](java-client-setup.md)를 따른다. 기본 `check`는 엔진과 로컬 인증 파일 없이 실행하며 실제 엔진 검증과 결과를 구분한다.
 
 아래 명령을 터미널에서 직접 실행할 때는 해당 프로세스의 `JAVA_HOME`을 JDK 21로 지정하거나 PATH에서 JDK 21의 `java`를 찾을 수 있어야 한다.
 
@@ -17,7 +17,7 @@ Elasticsearch·Nori의 이미지 빌드·인증서 준비·기동·검증·종�
 ./gradlew.bat check
 ```
 
-macOS/Linux에서는 같은 인수를 `./gradlew`에 전달한다. 실행 권한이 없으면 `sh ./gradlew check`로 실행한다. 현재 빌드에 기록된 버전은 Java 21, Spring Boot 4.1.1, Gradle 9.7.1이다. M1-01에서 ES·Nori 9.4.7과 Java Client·Rest5 9.4.5를 선정했다. 공식 근거와 인증/TLS·메모리·상태 판정은 [검색 엔진 실행 계약](search-engine-setup.md)을 따른다. 실제 엔진 기동은 M1-02, Client 의존성 적용·연결 검증은 M1-03에서 수행한다.
+macOS/Linux에서는 같은 인수를 `./gradlew`에 전달한다. 실행 권한이 없으면 `sh ./gradlew check`로 실행한다. 현재 빌드에 기록된 버전은 Java 21, Spring Boot 4.1.1, Gradle 9.7.1이다. M1-01에서 ES·Nori 9.4.7과 Java Client·Rest5 9.4.5를 선정했다. 공식 근거와 인증/TLS·메모리·상태 판정은 [검색 엔진 실행 계약](search-engine-setup.md)을 따른다. 실제 엔진 기동은 M1-02, Client 의존성 적용·연결 검증은 M1-03에서 완료했다.
 
 ## 구성과 검증 수준
 
@@ -28,9 +28,10 @@ macOS/Linux에서는 같은 인수를 `./gradlew`에 전달한다. 실행 권한
 | 시드 계약 | 개수, 유일 ID, 필수값, 기대 상품 연결·속성 일치, 교정 정책 | `verifySeeds` |
 | 코드·평가 도구 테스트 | 앱 컨텍스트와 평가 계산·오류 처리의 회귀 검증 | `test` |
 | 개발 완료 게이트 | `test`와 `verifySeeds` 모두 실행 | `check` |
+| 실제 ES 연결 | 제품 Client의 TLS·인증·엔진 정보·실패 경계 | `integrationTest` |
 | 실제 API 평가 | 시나리오별 응답과 모드별 품질 지표 저장 | `evaluateSearch` |
 
-`verifySeeds`는 Elasticsearch와 Spring 컨텍스트 없이 실행한다. `test`에서는 seed 태그를 제외하므로 `check`에서 중복 실행하지 않는다. 기대 상품과 속성 조건의 기계적 일치 확인은 사람이 판정한 검색 관련성 검토를 대신하지 않는다.
+`verifySeeds`는 Elasticsearch와 Spring 컨텍스트 없이 실행한다. `test`에서는 `seed`·`elasticsearch` 태그를 제외한다. `integrationTest`는 `elasticsearch` 태그만 실행하며 `check`에 연결하지 않는다. 외부 엔진 상태를 확인하므로 캐시·UP-TO-DATE 결과를 재사용하지 않고, 실행 후 검사가 NO-SOURCE·전체 skip·실행 0개를 거절한다. 엔진 부재도 성공으로 건너뛰지 않는다. 기대 상품과 속성 조건의 기계적 일치 확인은 사람이 판정한 검색 관련성 검토를 대신하지 않는다.
 
 평가 실행기는 테스트 소스와 클래스패스에서 실행하며 앱 JAR에 포함되지 않는다. 세부 요청·응답과 측정 규칙은 [평가 계약](evaluation-contract.md)을 따른다.
 
@@ -104,7 +105,7 @@ macOS/Linux에서는 같은 인수를 `./gradlew`에 전달한다. 실행 권한
 ./gradlew.bat check
 ```
 
-일반 `test`는 seed 태그를 제외한다. 잘못된 태스크를 실행해 테스트가 선택되지 않은 상태를 통과로 취급하지 않는다. 실행된 테스트 수와 결과를 확인한다. macOS/Linux에서는 `./gradlew`를 사용한다.
+일반 `test`는 `seed`·`elasticsearch` 태그를 제외한다. 잘못된 태스크를 실행해 테스트가 선택되지 않은 상태를 통과로 취급하지 않는다. 실행된 테스트 수와 결과를 확인한다. macOS/Linux에서는 `./gradlew`를 사용한다.
 
 과거의 테스트 통과 기록만으로 테스트를 먼저 작성했다고 소급해서 주장하지 않는다. Red 단계의 실패는 개발 증거이며, 일반 커밋·푸시 대상은 Green과 필수 검증을 마친 변경이다.
 

@@ -5,12 +5,12 @@
 ## 현재 상태
 
 - 목표: 한국어 상품 검색 품질을 같은 데이터와 질의에서 비교하는 검색·백엔드 포트폴리오.
-- 현재 단계: H0·M1-01 완료, M1-02 ES/Nori 기동·재기동 검증 완료. 다음은 M1-03 공식 Java Client 연결이다. 실제 검색 API·상품 색인은 아직 미구현.
+- 현재 단계: H0·M1-01~M1-03 구현·검증 완료. 다음은 M1-04 실제 엔진 테스트의 인덱스 격리다. 실제 검색 API·상품 색인은 아직 미구현.
 - M0 데이터: 가상 상품 50개와 개발 시나리오 30개. 사람의 관련성 판정 재검토는 대기.
 - 기존 스캐폴드: Java 21, Spring Boot 4.1.1, Gradle 9.7.1. 이 버전을 변경하지 않고 하네스를 추가한다.
-- 검색 엔진·Nori·공식 Java Client 버전: ES·Nori 9.4.7 실제 기동 확인, Java Client·Rest5 9.4.5 선정. [실행 계약](search-engine-setup.md)과 [로컬 실행 안내](local-elasticsearch.md)를 따르며 Client 연결은 M1-03에서 검증한다.
+- 검색 엔진·Nori·공식 Java Client 버전: ES·Nori 9.4.7, Java Client·Rest5 9.4.5의 실제 TLS·인증 연결 확인. [실행 계약](search-engine-setup.md), [로컬 실행 안내](local-elasticsearch.md), [Client 설정](java-client-setup.md)을 따른다.
 - 개발 방식: 기능·버그·동작 변경은 테스트를 먼저 작성하는 TDD(Red → Green → Refactor)로 진행한다.
-- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 작은 단위로 구분했다. M1-02 실행 검증을 완료했으며 전달·PR 머지는 별도 상태로 관리한다. 제품 검색 기능 구현은 아직 시작하지 않았다.
+- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 작은 단위로 구분했다. M1-02는 머지 완료, M1-03은 구현·검증·커밋·푸시와 PR #8 작성 완료다. PR은 OPEN이며 GitGuardian의 테스트 경로 오탐 4건으로 검사 실패가 남아 있다. 제품 검색 기능 구현은 아직 시작하지 않았다.
 
 ## H0 · 하네스 완료
 
@@ -158,16 +158,61 @@
 - 회귀 검증: `./gradlew.bat --offline --no-daemon check` 성공. test·verifySeeds 실제 실행의 XML 기준 118개·실패/오류/건너뜀 0개. 최종 코드 보완 후 같은 check도 성공(5개 태스크 up-to-date)했다. JDK·캐시는 프로세스에만 지정했고 제품 코드·시드·Gradle 의존성은 그대로다.
 - 최종 점검: 후보 15개 파일에서 실제 로컬 비밀번호와 개인키·토큰 패턴이 없고 추적된 제외 파일·staged 변경이 없음을 확인했다. 상대 링크 51개, PowerShell 스크립트 2개·문서 명령 블록 10개, wrapper LF와 diff 공백 검사를 통과했다. 독립 리뷰의 차단 사항은 없었다. 재기동 후 tmpfs·모드 400·원본과 복사본 동일, 잘못된 비밀번호의 401, 컨테이너 healthy를 확인했다. 복사본 비교의 최초 cmp 명령은 이미지에 없어 실패했으며 SHA-256을 메모리에서 비교해 확인하고 값·해시는 출력하지 않았다.
 - 증거: 안전한 전후 요약과 이미지 검증은 `build/m1-02/`, 원본 엔진 로그는 `.local/elasticsearch/logs/`에 보관하며 Git 제외다. 구현 완료 시 엔진이 로컬에서 실행 중임을 확인했다.
-- 전달 결과: 사용자 요청으로 구현 커밋 `2d8398bd893c5d33477e10b29f47dfdc5a9600ca`를 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR과 이슈 연결을 다시 조회한 뒤 [PR #6](https://github.com/letter333/commerce-search-lab/pull/6) 하나를 생성했다. base `main`, head `codex/issue-5-nori-engine`, 본문 `Closes #5`와 실제 종료 대상 #5의 연결을 확인했다. PR OPEN, 이슈 #5 OPEN이며 머지·이슈 종료는 아직 수행하지 않았다.
-- 전달 검증: 후보 15개 파일의 독립 범위·민감정보 검토에 차단 사항이 없었다. 최종 index와 검증한 작업 트리 내용이 같고 공백·LF·실제 로컬 비밀번호·개인키·토큰 패턴·추적된 제외 파일 검사를 통과했다. 원격에 없는 구현 커밋 전체도 검사했다. 해당 구현 SHA의 GitGuardian 검사 SUCCESS를 확인했다. 이후 전달 기록만 문서 커밋으로 같은 PR에 반영하며, 코드 변경이 없어 회귀·엔진 검증을 반복하지 않는다.
+- 전달 결과: 사용자 요청으로 구현 커밋 `2d8398bd893c5d33477e10b29f47dfdc5a9600ca`를 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR과 이슈 연결을 다시 조회한 뒤 [PR #6](https://github.com/letter333/commerce-search-lab/pull/6) 하나를 생성했다. base `main`, head `codex/issue-5-nori-engine`, 본문 `Closes #5`와 실제 종료 대상 #5의 연결을 확인했다. 이후 별도 머지 요청을 받아 PR MERGED, 이슈 #5 CLOSED / COMPLETED 상태를 확인했다.
+- 전달 검증: 후보 15개 파일의 독립 범위·민감정보 검토에 차단 사항이 없었다. 최종 index와 검증한 작업 트리 내용이 같고 공백·LF·실제 로컬 비밀번호·개인키·토큰 패턴·추적된 제외 파일 검사를 통과했다. 원격에 없는 구현 커밋 전체도 검사했다. 전달 기록 커밋 `82a46968f07de2a0033ce98a9eda63a8738b242d`를 같은 PR에 반영하고 최종 원격 SHA 일치와 GitGuardian 검사 SUCCESS를 확인했다. 코드 변경이 없어 회귀·엔진 검증을 반복하지 않았다.
+- 후속 머지: 사용자 지시로 2026-09-25 19:54:36 KST에 PR #6을 `main`으로 머지했다. 기존 두 커밋을 유지하는 merge commit은 `5dcfa231de4ba609ca26c50c8c238559dbdc793e`다. 실제 MERGED 상태·시각·대상 브랜치와 `origin/main` 포함을 확인했다. 이슈 #5는 19:54:38 KST에 자동 종료됐으며 CLOSED / COMPLETED를 확인했다. 중복 종료 명령은 실행하지 않았다.
+- 머지 검증/정리: 머지 결과 tree와 검토한 PR head tree가 같고 기존 두 커밋이 보존됐다. 독립 검토에서 새 차단 사항이 없었으며 검증 대상 구현이 바뀌지 않아 테스트를 반복하지 않았다. 깨끗한 작업 트리에서 로컬 `main`을 `origin/main`으로 fast-forward했다. 이 머지 기록만 로컬 미커밋 상태로 남기며 기존 작업 브랜치는 유지한다.
 
-## 다음 작업 · M1-03 공식 Java Client 연결
+## M1-03 · 공식 Java Client 연결 완료
 
-- 목적: 선정한 Java Client·Rest5 9.4.5와 Jackson3JsonpMapper를 제품 설정에 연결하고 실제 엔진 버전을 읽는다.
-- 착수: M1-02 전달·머지 상태를 확인한 뒤 해당 작업의 이슈·모든 상태 PR을 조회·등록하고 독립 브랜치에서 진행한다.
-- 먼저 검증: ES 통합 테스트와 기본 check를 분리하고 잘못된 설정 오류·실제 엔진 정보 응답·자원 종료를 테스트부터 구현한다. 엔진 없이 기본 check가 통과하고 통합 테스트 미실행을 성공으로 처리하지 않아야 한다.
-- 의존성: Client 추가 후 실제 resolved graph와 JSON/HTTP/TLS 동작을 확인한다. M1-01 예상 버전 차이를 실제 오류로 단정하지 않는다.
-- 후속 경계: 테스트 인덱스 격리는 M1-04, 실제 Nori 토큰은 M1-09다. M1-02 완료는 상품 검색·품질 검증 완료를 뜻하지 않는다.
+- 착수 기록: 사용자 구현 요청에 따라 이슈 [#7](https://github.com/letter333/commerce-search-lab/issues/7)을 등록했다. 모든 상태의 이슈·PR을 조회해 중복이 없음을 확인했다. 브랜치 `codex/issue-7-java-client`, 기준선 `5dcfa231de4ba609ca26c50c8c238559dbdc793e`. 기존 미커밋 M1-02 머지 기록은 전환 전후 해시가 같아 보존했다.
+
+- 변경: 공식 Java Client·Rest5 9.4.5와 명시적 `Jackson3JsonpMapper`를 Spring 설정에 연결했다. 기본 비활성화, HTTPS origin·사용자명·경로·제한 시간 검증, CA 신뢰·호스트명 검증, 파일 기반 비밀번호, 연결/풀/TLS·응답/socket 제한을 적용했다. 설정·파일 오류에 입력값과 원래 예외의 민감 경로를 포함하지 않는다. HTTP 자원은 Rest5Client 빈 한 곳에서 종료한다.
+- 테스트 분리: `elasticsearch` 태그의 `integrationTest`는 `check`와 분리하고 매번 실제 실행한다. 완료 태스크가 NO-SOURCE·태스크 건너뜀·실행 테스트 0개·전체 skipped를 거절한다. 기본 앱 컨텍스트 테스트는 ES 설정을 명시적으로 비활성화해 외부 환경변수에 영향받지 않는다.
+- 의존성: compile/runtime/testRuntime 세 보고서와 Jackson·OpenTelemetry API의 `dependencyInsight`가 성공했다. Client/Rest5 9.4.5, HC5 5.6.4, Core5 5.4.3, Jackson 3 3.1.5, Jackson 2 2.21.5, Parsson 1.1.9, OpenTelemetry API 1.62.0·semconv 1.41.1을 확인했다. Jackson 2·OpenTelemetry의 관리 버전 하향을 확인했지만 실제 JSON/요청 경로에서 linkage 오류는 없었다. 전역 override·exclude는 추가하지 않았다. 상세 선택값은 [실행 계약](search-engine-setup.md)에 기록했다.
+
+### TDD와 보강 검증
+
+아래 명령은 설치된 JDK 21과 기존 Gradle 캐시를 해당 프로세스에 지정해 실행했다. 시스템 `JAVA_HOME`은 바꾸지 않았다. 의존성 최초 추가 시 온라인 `check`로 다운로드했고 이후에는 `--offline --no-daemon`을 사용했다.
+
+| 단위·명령 | 실제 Red | Green·후속 확인 |
+|---|---|---|
+| `test --tests '*ElasticsearchPropertiesTest'` | 정상 endpoint 스텁의 null 반환으로 1개 실패; URL/노출 방지 17개, 필수 입력 13개, 제한 시간 12개, record 출력 노출 1개를 순차 재현 | 각 최소 구현 후 1 → 21 → 34 → 48 → 49개 통과 |
+| `test --tests '*ElasticsearchConfigurationTest'` | 빈 설정 클래스에서 활성화 시 Client 부재: 2개 중 1개 실패 | 최소 빈 구성 후 2개 통과 |
+| 같은 설정 테스트의 파일 검증 | 비밀번호 입력 허용·누락/잘못된 파일 오류 문제: 12개 중 9개 실패 | 파일 읽기/검증·안전한 오류 구현 후 12개 통과 |
+| JSON·종료·TLS 제한·개행/UTF-8 보강 | 기존 구현에 대한 보호 테스트로 첫 실행부터 통과; Red로 주장하지 않음 | 설정 테스트 최종 19개 통과. 정상 종료와 후속 빈 초기화 실패 시 종료, 정지된 TLS handshake 제한 확인 |
+| 기본 앱 컨텍스트 테스트 | `ES_ENABLED=true`와 잘못된 URL을 상속해 기본 테스트 실패 | 테스트에서 ES 비활성화를 명시한 뒤 통과 |
+| 통합 검증 실행 여부 | NO-SOURCE 강제 시 기존 Test 태스크의 `doLast` 검사가 실행되지 않아 BUILD SUCCESSFUL로 끝남 | 별도 finalizer로 옮긴 뒤 NO-SOURCE와 전체 skipped 강제 실행 모두 종료 코드 1로 차단 |
+
+파일 검증 테스트의 첫 컴파일은 존재하지 않는 AssertJ 메서드 때문에 실패했다. 테스트 API를 수정한 뒤 동작 실패를 별도로 확인했으며 컴파일 오류는 Red에 포함하지 않았다. 실제 엔진의 인증/TLS 실패를 검사하는 통합 테스트는 구성된 클라이언트의 동작 검증이며, 연결 환경 실패 자체를 검색 로직의 Red로 계산하지 않는다.
+
+### 최종 결과와 경계
+
+| 검증 | 실제 결과 |
+|---|---|
+| `./gradlew.bat --offline --no-daemon check` | 일반 테스트 102개 + 시드 84개 = **186개 통과**, 실패·오류·건너뜀 0. 엔진을 중지하고 ES 활성 환경변수와 존재하지 않는 인증 파일 경로를 지정한 상태에서도 성공 |
+| `./gradlew.bat --offline --no-daemon integrationTest` | **4개 통과**, 실패·오류·건너뜀 0. 복구 후 연속 두 실행에서 integrationTest가 UP-TO-DATE/캐시로 대체되지 않고 실제 실행됨 |
+| 실제 TLS·인증 연결 | ES 9.4.7 / cluster `commerce-search-lab` 조회 성공; 잘못된 비밀번호 401, 다른 CA에서 SSLHandshakeException, CRLF를 붙인 비밀번호 임시 복사본으로 정상 조회 |
+| 엔진 부재 | 엔진 중지 중 실제 정보 조회 테스트 1개 실행·1개 실패, ConnectException. 0건/건너뜀으로 성공 처리하지 않음 |
+| NO-SOURCE·전체 skipped | `build/m1-03/no-source.init.gradle` 및 `all-skipped.init.gradle`로 유도한 실행이 모두 검증 오류로 차단됨 |
+| 엔진 복구·보존 | green 복구. cluster UUID `UNO3XeASSbifnQAr2cP3fQ`, CA SHA-256 `4CEE9280C8C599C91A4186708D8DA5BFAD54F4D25AD6BA3AA99AF36FCACFFF3A` 동일. 기존 인증 파일 4개의 내용 동일성을 해시로 비교했고 비밀값·개인키 해시는 출력하지 않음 |
+
+엔진 중지 검사 보조 스크립트는 의도한 ConnectException 발생 후 XML 문서 전체의 InnerText를 잘못 판독해 별도 오류를 냈다. finally에서 엔진 복구와 인증 파일 보존 검사가 완료됐고, 실패 노드의 InnerText·유형과 XML의 실행 1/실패 1/건너뜀 0을 직접 확인했다. 보조 판독을 수정했으며 이 보조 오류를 제품 테스트 실패나 성공으로 섞지 않았다. 이후 위의 전체 통합 테스트 4개를 다시 통과했다.
+
+- 민감정보: 실제 비밀번호와 해당 Basic 인증 인코딩, 개인키·토큰 패턴을 변경 후보와 테스트 XML에서 검사했다. 실제 인증 파일·개인키·임시 보고서는 Git 제외 상태다. 테스트 fixture는 개발 엔진과 무관한 **공개 CA 인증서만** 포함하며 생성용 개인키 저장소는 `build/`에 남겼다.
+- 검토: 설정/TLS/자원 수명, 테스트 실행 경계, 문서의 독립 검토를 반영했다. 자원 종료는 일반 컨텍스트 테스트, 실제 연결은 통합 테스트로 구분해 안내했다. 최종 후보 17개 파일의 민감정보 검사, 상대 링크 62개와 diff 공백 검사가 통과했고 추적된 제외 파일·staged 변경은 없었다. 구현·시드 범위를 벗어난 변경과 검색 품질 주장은 없다.
+- 증거: `build/reports/tests/{test,verifySeeds,integrationTest}/`, `build/test-results/`, `build/m1-03/`는 로컬 임시 산출물이며 Git 제외다. 최종 엔진은 실행 중이다.
+- 전달 결과: 사용자 요청으로 구현 커밋 `0035993fcf9b3b051f725882c531406866dc8bf5`를 `origin/codex/issue-7-java-client`에 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR·이슈 타임라인을 다시 확인한 뒤 [PR #8](https://github.com/letter333/commerce-search-lab/pull/8) 하나를 생성했다. base `main`, head `codex/issue-7-java-client`, 변경 17개 파일과 본문 `Closes #7` 및 실제 종료 대상 #7의 연결을 확인했다. PR과 [이슈 #7](https://github.com/letter333/commerce-search-lab/issues/7)은 OPEN이며 아직 머지하지 않았다.
+- 전달 검증: 독립 범위·민감정보 검토에 차단 사항이 없었고, 최종 index가 검증한 작업 트리와 같았다. 원격에 없는 구현 커밋의 모든 새 blob과 메시지, 실제 비밀번호·인증 문자열·개인키·토큰 패턴을 검사했다. 커밋에는 기존 공개 noreply 작성자를 사용했다. 직전 최종 검증 이후 제품 코드·테스트·빌드 구성이 바뀌지 않아 테스트를 반복하지 않았다. 전달 기록은 별도 문서 커밋으로 같은 PR에 반영한다.
+- 원격 보안 검사: GitGuardian이 구현 커밋의 `ElasticsearchPropertiesTest.java` 49·87·99·112행을 Generic Password 4건으로 탐지해 실패했다. 모두 `ElasticsearchProperties`의 비밀번호 **파일 경로** 인수에 넣은 placeholder다. 해당 테스트는 파일을 읽지 않으며 실제 로컬 비밀번호·Basic 인증 인코딩과 불일치함을 재확인했다. 독립 검토도 테스트 경로 오탐으로 판정했지만 원격 검사 실패는 해소되지 않았다. 이 사실을 PR과 이슈에 기록하며 검사 성공으로 보고하지 않는다.
+- 남은 전달 조건: 머지 전 GitGuardian 오탐 판정 처리가 필요하다. 검사 skip·탐지 예외·보호 설정 변경·강제 푸시는 수행하지 않았다. GitGuardian은 [PR의 각 커밋을 검사](https://docs.gitguardian.com/internal-monitoring/prevent/detect-secrets-in-real-time-in-github)하므로 후속 커밋에서 경로 문자열만 바꿔도 이미 전송한 커밋의 탐지는 남는다. 실제 비밀값 노출로 볼 근거는 없으며 자격증명을 교체하지 않았다.
+
+## 다음 작업 · M1-04 테스트 인덱스 격리
+
+- 목적: 실제 엔진 테스트가 서로와 개발용 인덱스에 영향을 주지 않게 한다. 착수 전에 해당 작업 ID의 이슈·모든 상태 PR을 조회하고 작업 이슈를 연결한다.
+- 먼저 작성(I): 서로 다른 고유 테스트 인덱스에 문서 하나씩 저장·조회하고, 한쪽을 정리해도 다른 쪽 데이터가 남는지 확인한다.
+- 범위: 테스트별 고유 이름과 실패 시 정리. 삭제는 해당 테스트가 생성한 구체적인 이름으로 제한한다. M1-03의 통합 테스트 태스크와 제품 Client를 재사용한다.
+- 후속 경계: 상품 로딩·색인·검색 API와 Nori 토큰 품질은 각 후속 작업에서 검증한다. 현재 연결 검증은 검색 품질 측정이 아니다.
 - API는 [평가 계약](evaluation-contract.md)에 맞춘다. 변경이 필요하면 실행기·계약·테스트를 함께 갱신한다.
 - 데이터 관련성은 사람이 재검토한 뒤 검토자·일자·변경 근거를 기록한다. 자동 시드 검사만으로 M0를 완료 처리하지 않는다.
 - 기존에 한 항목으로 적었던 M1-01 실행 환경 고정을 세분화했다. 이후 구현은 [상세 계획의 작업 ID](implementation-plan.md)를 사용하며 실제 결과는 이 작업 기록에 남긴다.

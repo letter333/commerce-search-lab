@@ -2,7 +2,7 @@
 
 결정일: 2026-09-25. 작업: [M1-01 / 이슈 #3](https://github.com/letter333/commerce-search-lab/issues/3). 기준선: `main`의 `5c328794b2a9b835f101dee11dbb2d0c3202dff0`.
 
-**M1-01에서 버전·실행 계약을 정했고 M1-02에서 이미지 빌드와 실제 ES/Nori 기동을 검증했다. Client 연결은 아직 미검증이다.** 실행 방법과 Windows 환경 보완은 [로컬 실행 안내](local-elasticsearch.md), 실제 결과는 [작업 기록](worklog.md)을 따른다. [세부계획](m1-01-plan.md), [전체 작업 순서](implementation-plan.md)도 함께 확인한다.
+**M1-01에서 버전·실행 계약을 정했고 M1-02에서 실제 ES/Nori 기동, M1-03에서 공식 Client의 TLS·인증 연결을 검증했다.** 실행 방법은 [로컬 엔진 안내](local-elasticsearch.md)와 [Java Client 안내](java-client-setup.md), 실제 결과는 [작업 기록](worklog.md)을 따른다. [세부계획](m1-01-plan.md), [전체 작업 순서](implementation-plan.md)도 함께 확인한다.
 
 ## 1. 선정 버전
 
@@ -17,15 +17,15 @@
 | HTTP 전송 | **Rest5Client 9.4.5** | `co.elastic.clients:elasticsearch-rest5-client:9.4.5`, Client의 전이 의존성. legacy RestClient는 추가하지 않음 |
 | JSON mapper | `Jackson3JsonpMapper` | `tools.jackson.databind.json.JsonMapper`를 명시적으로 연결 |
 
-서버는 같은 9.4 계열의 후속 patch를 채택하고 앱은 Boot가 관리하는 Client 9.4.5를 유지한다. 공식 호환 정책의 같은 minor 내 클라이언트보다 같거나 높은 서버 patch 방향을 따른다. 이것은 서버의 새 API를 클라이언트가 자동 지원하거나 실제 연결 검증까지 끝났다는 뜻은 아니다. [Java Client 호환 정책](https://www.elastic.co/docs/reference/elasticsearch/clients/java)
+서버는 같은 9.4 계열의 후속 patch를 채택하고 앱은 Boot가 관리하는 Client 9.4.5를 유지한다. 공식 호환 정책의 같은 minor 내 클라이언트보다 같거나 높은 서버 patch 방향을 따른다. 정책 자체가 서버의 새 API 지원이나 실제 연결 검증을 보장하지는 않는다. M1-03에서 이 조합의 엔진 정보 조회·TLS·인증 경로를 별도로 검증했다. [Java Client 호환 정책](https://www.elastic.co/docs/reference/elasticsearch/clients/java)
 
 공식 9.4.7 이미지의 amd64/arm64 배포와 Nori 9.4.7 ZIP의 존재를 확인했다. M1-02에서 실제로 가져온 이미지의 digest·플랫폼·엔진 버전을 기록한다. 앱의 JDK를 ES 컨테이너에 주입하지 않고 이미지에 포함된 JDK를 사용한다. [공식 이미지](https://www.docker.elastic.co/r/elasticsearch/elasticsearch:9.4.7), [서버 배포](https://www.elastic.co/downloads/past-releases/elasticsearch-9-4-7), [Nori 배포](https://artifacts.elastic.co/downloads/elasticsearch-plugins/analysis-nori/analysis-nori-9.4.7.zip)
 
 비교한 대안은 서버·Nori까지 9.4.5로 맞추는 조합이다. 서버 9.4.7의 분석 필터 입력·메모리 제한과 조회 오류 수정 등을 반영하기 위해 이를 채택하지 않았다. Client 9.4.5는 알려진 Rest5 네트워크 지연 회귀의 수정 버전이기도 하다. [서버 릴리스 기록](https://www.elastic.co/docs/release-notes/elasticsearch), [Client 알려진 문제](https://www.elastic.co/docs/release-notes/elasticsearch/clients/java/known-issues)
 
-## 2. 의존성 확인 결과와 M1-03의 검증 조건
+## 2. 의존성 확인 결과
 
-현재 프로젝트에서 기존 캐시로 아래 명령을 실행했다. 세 보고서는 모두 성공했고 unresolved dependency의 `FAILED` 표시는 없었다. runtime과 testRuntime 모두 `tools.jackson.core:jackson-databind/core:3.1.5`를 사용하며, ES Client와 Rest5는 아직 없다.
+M1-01 시점의 프로젝트에서 기존 캐시로 아래 명령을 실행했다. 세 보고서는 모두 성공했고 unresolved dependency의 `FAILED` 표시는 없었다. 당시 runtime과 testRuntime 모두 `tools.jackson.core:jackson-databind/core:3.1.5`를 사용했고, ES Client와 Rest5는 아직 없었다.
 
 ```powershell
 ./gradlew.bat --offline --no-daemon dependencies --configuration runtimeClasspath
@@ -54,7 +54,34 @@ IntelliJ 사용자는 같은 Gradle 태스크를 IDE에서 실행할 수 있다.
 
 선정 버전의 `Jackson3JsonpMapper`는 `tools.jackson.databind.json.JsonMapper`를 받는다. 일반 `ObjectMapper` 인수라고 가정하지 않는다. `JacksonJsonpMapper`는 별도 Jackson 2 경로다. 현재 `com.fasterxml.jackson.annotation`이 존재하는 것만으로 Jackson 2 databind가 잘못 유입됐다고 판단하지 않는다. [9.4.5 mapper API](https://artifacts.elastic.co/javadoc/co/elastic/clients/elasticsearch-java/9.4.5/co/elastic/clients/json/jackson/Jackson3JsonpMapper.html), [전송·mapper 설명](https://www.elastic.co/docs/reference/elasticsearch/clients/java/transport)
 
-M1-03에서는 Client 추가 후 compile/runtime/testRuntime과 관련 `dependencyInsight`를 다시 확인한다. 제품 코드가 `JsonMapper`를 직접 참조할 때 필요한 생산 코드 의존성도 확인하며 기존 `testImplementation`만으로 충분하다고 단정하지 않는다. JSON 직렬화·역직렬화 테스트와 실제 엔진 정보 응답 파싱을 수행한다. Jackson 2·OpenTelemetry 하향 예상은 조사할 위험이며 이미 발생한 오류가 아니다. 구체적인 재현 없이 전역 버전 override·exclude나 legacy HTTP 전송을 추가하지 않는다. 실패하면 원인을 해결하고 실제 연결 완료 전에는 이 조합의 실행 호환성을 통과 처리하지 않는다.
+M1-01에서 위 차이를 M1-03의 확인 대상으로 정했다. 구체적인 재현 없이 전역 버전 override·exclude나 legacy HTTP 전송을 추가하지 않는 원칙은 유지한다.
+
+### M1-03 실제 선택과 연결 검증
+
+Client를 추가하고 `tools.jackson.core:jackson-databind`를 `implementation`에 선언했다. Gradle `DependencyReportTask`로 compile/runtime/testRuntime 세 구성을 모두 resolve했고 `FAILED`가 없었다. Jackson과 OpenTelemetry API의 `dependencyInsight`도 성공했다. 아래는 예상이 아닌 실제 선택값이다.
+
+| 의존성 | 실제 선택값 | 관찰 |
+|---|---|---|
+| Client / Rest5 | 9.4.5 / 9.4.5 | 세 구성에서 동일 |
+| HttpClient5 | 5.6.4 | 요청 버전 5.6.3에서 Boot 관리값 선택 |
+| HttpCore5 / httpcore5-h2 | 5.4.3 / 5.4.3 | 세 구성에서 동일 |
+| Jackson 3 core/databind | 3.1.5 / 3.1.5 | 명시한 `Jackson3JsonpMapper`로 JSON 왕복·실제 응답 파싱 통과 |
+| Jackson 2 core/databind | 2.21.5 / 2.21.5 | runtime/testRuntime에서 2.22.0 요청을 관리 규칙으로 조정; 제품 mapper는 Jackson 3 사용 |
+| Jakarta JSON API / Parsson | 2.1.3 / 1.1.9 | Rest5의 Parsson 1.1.7 요청도 1.1.9로 통일 |
+| commons-logging | 1.3.6 | 1.3.5 요청에서 관리값 선택 |
+| OpenTelemetry API / semconv | 1.62.0 / 1.41.1 | runtime/testRuntime; API 1.63.0 요청을 관리 규칙으로 조정 |
+
+일반 Gradle 진입점으로 다시 확인할 수 있다. 새 PC의 최초 의존성 다운로드에는 `--offline`을 사용하지 않는다.
+
+```powershell
+./gradlew.bat dependencies --configuration compileClasspath
+./gradlew.bat dependencies --configuration runtimeClasspath
+./gradlew.bat dependencies --configuration testRuntimeClasspath
+./gradlew.bat dependencyInsight --dependency jackson-databind --configuration runtimeClasspath
+./gradlew.bat dependencyInsight --dependency opentelemetry-api --configuration runtimeClasspath
+```
+
+실제 ES 9.4.7 정보 조회, 잘못된 비밀번호의 401, 신뢰하지 않는 CA의 TLS 실패, CRLF 비밀번호 파일로 정상 조회를 통과했다. 이 실행에서 Jackson·OpenTelemetry linkage 오류는 없었으며 별도 버전 override는 추가하지 않았다. JSON 왕복과 정상/초기화 실패 시 자원 종료는 엔진 없는 테스트로 확인했다. 전체 명령·실패 경계·수치는 [M1-03 작업 기록](worklog.md)에 남긴다. 로컬 보고서는 Git 제외 경로 `build/m1-03/`에 있다. 이 결과는 아직 구현하지 않은 색인·검색 API의 호환성과 품질을 검증한 것은 아니다.
 
 ## 3. 로컬 실행 설정
 
@@ -157,8 +184,8 @@ docker compose -p commerce-search-lab -f compose.yaml down
 |---|---|
 | M1-01 | 버전·공식 근거·기존 의존성 관찰·로컬 실행/검증 계약 확정 |
 | M1-02 | Dockerfile·Compose·초기화/검증 스크립트 구현, ES/Nori 실제 기동 검증. 재기동 증거와 호스트 제약은 작업 기록 참고 |
-| M1-03 | 아직 미실행: Client 의존성 추가 후 실제 resolved graph, JSON mapper·전송·인증/TLS 경로, 실제 연결과 종료 처리 |
+| M1-03 | Client 의존성·설정 구현, 실제 resolved graph·JSON mapper·TLS/인증 연결·종료 처리 검증 완료 |
 | M1-04 | 아직 미실행: 테스트 인덱스의 생성·삭제 격리 |
 | M1-09 | 아직 미실행: Nori 토큰·분석기 동작 확인 |
 
-M1-01은 문서·환경 계약, M1-02는 설정 전 검사 준비와 실제 컨테이너 검증으로 진행했다. 제품 코드·시드·Gradle 의존성은 바꾸지 않았다. 기존 하네스 118개 통과와 실제 ES/Nori 기동 증거는 구분하며, Client 조합의 연결 검증은 M1-03에 남아 있다.
+M1-01은 문서·환경 계약, M1-02는 설정 전 검사 준비와 실제 컨테이너 검증으로 진행했다. M1-03에서 제품 Client 설정·의존성을 추가했으며 시드는 변경하지 않았다. 일반 `check` 186개와 실제 엔진 통합 테스트 4개의 결과를 구분해 기록했다. 다음 구현은 M1-04 테스트 인덱스 격리다.
