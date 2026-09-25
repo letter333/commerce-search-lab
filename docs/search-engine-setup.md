@@ -2,7 +2,7 @@
 
 결정일: 2026-09-25. 작업: [M1-01 / 이슈 #3](https://github.com/letter333/commerce-search-lab/issues/3). 기준선: `main`의 `5c328794b2a9b835f101dee11dbb2d0c3202dff0`.
 
-**문서상 버전 선정과 실행 계약을 확정했다. 실제 이미지 빌드·엔진 기동·Client 연결은 아직 검증하지 않았다.** M1-02는 이 문서로 엔진을 구성하고, M1-03은 제품 Client와 의존성을 연결한다. [세부계획](m1-01-plan.md), [전체 작업 순서](implementation-plan.md), [작업 기록](worklog.md)을 함께 따른다.
+**M1-01에서 버전·실행 계약을 정했고 M1-02에서 이미지 빌드와 실제 ES/Nori 기동을 검증했다. Client 연결은 아직 미검증이다.** 실행 방법과 Windows 환경 보완은 [로컬 실행 안내](local-elasticsearch.md), 실제 결과는 [작업 기록](worklog.md)을 따른다. [세부계획](m1-01-plan.md), [전체 작업 순서](implementation-plan.md)도 함께 확인한다.
 
 ## 1. 선정 버전
 
@@ -58,7 +58,7 @@ M1-03에서는 Client 추가 후 compile/runtime/testRuntime과 관련 `dependen
 
 ## 3. 로컬 실행 설정
 
-다음 값은 **M1-02가 구현할 프로젝트 실행 계약**이다. 파일·컨테이너·비밀값은 M1-01에서 생성하지 않았다.
+다음 값은 **M1-02가 구현한 프로젝트 실행 계약**이다. M1-01의 문서 선정 이후 실제 기동에서 필요한 Windows 보완을 반영했다.
 
 | 항목 | 결정값 |
 |---|---|
@@ -75,7 +75,8 @@ M1-03에서는 Client 추가 후 compile/runtime/testRuntime과 관련 `dependen
 | 데이터 | named volume `commerce-search-lab-es-data` → `/usr/share/elasticsearch/data` |
 | 인증서 보관 | Git 제외 경로 `.local/elasticsearch/certs/`. CA 개인키는 인증서 생성 시에만 사용하고 실행 서비스에는 제공하지 않음 |
 | 노드 인증서 경로 | 노드 `es01.crt`, `es01.key`, 공개 `ca.crt`만 `/usr/share/elasticsearch/config/certs/` 아래로 읽기 전용 마운트 |
-| 비밀번호 | `.local/elasticsearch/elastic-password.txt`를 Compose secret `elastic_password`로 전달, `ELASTIC_PASSWORD_FILE=/run/secrets/elastic_password` |
+| 비밀번호 입력 | `.local/elasticsearch/elastic-password.txt`를 읽기 전용 Compose secret `elastic_password`로 전달 |
+| 비밀번호 권한 | Windows 마운트의 777 모드로 ES 시작 검사가 실패했다. 로컬 wrapper가 원본을 `/run/local-secrets` tmpfs(0700, uid 1000)에 모드 400으로 복사하고 `ELASTIC_PASSWORD_FILE=/run/local-secrets/elastic_password`로 원래 entrypoint에 전달 |
 | 상태 시간 | 연결 timeout 5초, cluster health API timeout 30초, 클라이언트 최대 40초, 초기 준비 대기 상한 180초 |
 | 도달성 healthcheck | 10초 간격, 각 5초 timeout, start period 30초, retries 12. CA 검증이 통과한 무인증 HTTPS의 정확한 401 응답 검사 |
 
@@ -89,7 +90,7 @@ M1-02에서 고정 ES 이미지의 `elasticsearch-certutil ca --silent --pem`과
 
 CA/노드 파일 생성은 일회성 준비 단계로 분리한다. `--pem` 출력 ZIP을 압축 해제하면 `ca/ca.crt`, `ca/ca.key`, `es01/es01.crt`, `es01/es01.key`가 생긴다. 공개 CA·노드 인증서·노드 키는 각각 `.local/elasticsearch/certs/ca.crt`, `es01.crt`, `es01.key`로 배치한다. CA 개인키와 생성 ZIP은 별도 `.local/elasticsearch/ca-private/`에 보존하고 런타임에 마운트하지 않는다. 런타임 마운트는 위 세 파일만 허용하며, UID/GID `1000:0`이 필요한 파일을 읽을 수 있는지 확인한다. 앱은 공개 CA만 신뢰하고 `-k`, trust-all 또는 hostname 검증 해제를 사용하지 않는다. 인증서 파일의 지문은 민감한 원문 없이 재기동 전후 동일성을 확인하는 증거로 사용할 수 있다.
 
-비밀번호는 로컬에서 생성해 Git 제외 파일에 저장하고 Compose에는 파일 경로만 넣는다. `ELASTIC_PASSWORD_FILE`은 최초 bootstrap 입력이므로 기존 data volume의 비밀번호가 파일 편집만으로 바뀐다고 가정하지 않는다. 환경 예시 `.env.example`을 추가한다면 비밀 항목은 빈 값/placeholder만 사용한다. 파일 내용이나 펼쳐진 전체 Compose 설정을 로그·문서·이슈에 복사하지 않는다. [Docker 비밀값 파일 설정](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-docker-configure), [내장 사용자와 bootstrap password](https://www.elastic.co/docs/deploy-manage/users-roles/cluster-or-deployment-auth/built-in-users)
+비밀번호는 로컬에서 생성해 Git 제외 파일에 저장하고 Compose에는 파일 경로만 넣는다. M1-02에서 Windows file secret이 777로 보여 거부되는 오류를 재현했고, 읽기 전용 원본과 별도로 tmpfs에 만든 모드 400 복사본을 ES에 제공했다. `ELASTIC_PASSWORD_FILE`은 최초 bootstrap 입력이므로 기존 data volume의 비밀번호가 파일 편집만으로 바뀐다고 가정하지 않는다. 환경 예시에는 빈 값/placeholder 또는 안내만 둔다. 파일 내용이나 펼쳐진 전체 Compose 설정을 로그·문서·이슈에 복사하지 않는다. [Docker 비밀값 파일 설정](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-docker-configure), [내장 사용자와 bootstrap password](https://www.elastic.co/docs/deploy-manage/users-roles/cluster-or-deployment-auth/built-in-users)
 
 `elastic` 계정은 격리된 로컬 개발 환경의 초기 검증에 한정한다. 공유/배포 환경에서 사용할 권한 설계나 외부 접속 허용은 이 계약에 포함하지 않는다.
 
@@ -105,7 +106,7 @@ CA/노드 파일 생성은 일회성 준비 단계로 분리한다. `--pem` 출�
 | 9200·9300 호스트 포트 | 조회 시 LISTEN 없음 | 기동 직전 다시 확인 |
 | `vm.max_map_count` | **262144** | M1-02에서 프로젝트 권장 기준 **1048576 이상** 적용 여부를 확인·조정 |
 
-현재 Docker 설치 가이드의 권장값 1048576과 bootstrap 검사 문서의 최소값 262144를 구분한다. 현재 값만으로 반드시 ES 기동이 실패한다고 단정하지 않는다. 이 작업에서는 커널/WSL 설정을 변경하지 않았다. M1-02에서 해당 Windows/WSL의 적용 방법과 영향 범위를 확인하고, 조정 후 및 Docker/WSL 재시작 후 값을 재확인한다. `node.store.allow_mmap=false`로 조건을 우회하지 않는다. [Docker 시스템 설정](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-docker-prod), [가상 메모리](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/vm-max-map-count)
+위 표는 M1-01 관찰이다. 권장값 1048576과 bootstrap 최소값 262144를 구분하며, 현재 값만으로 반드시 ES 기동이 실패한다고 단정하지 않는다. M1-02에서 `/etc/sysctl.conf`와 WSL 부팅 인자를 각각 확인했지만 Docker 시작 후 실제 값이 262144로 돌아왔다. 이번에 추가한 영구 설정만 되돌리고 **Docker 시작 후 1048576을 적용하는 절차**로 확정했다. 실제 기동 시 1048576을 확인했으며 Docker/WSL 재시작 후에는 다시 적용한다. `node.store.allow_mmap=false`로 우회하지 않는다. [실제 환경 기록](local-elasticsearch.md), [Docker 시스템 설정](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-docker-prod), [가상 메모리](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/vm-max-map-count)
 
 ```powershell
 # 읽기 전용 점검 명령
@@ -115,9 +116,9 @@ docker info --format 'os={{.OSType}} arch={{.Architecture}} cpus={{.NCPU}} memor
 wsl -d docker-desktop -u root -- sysctl vm.max_map_count
 ```
 
-## 6. M1-02에서 실행할 명령과 판정
+## 6. 실행 명령과 판정
 
-아래 명령은 **M1-02에서 구성 파일·인증서·비밀번호 파일을 준비한 뒤 실행**한다. 현재 저장소에는 아직 `compose.yaml`이 없다. Windows에서는 `curl` 별칭 대신 `curl.exe`를 사용한다.
+아래 명령은 **[최초 준비 절차](local-elasticsearch.md)를 마친 뒤 실행**한다. Windows에서는 `curl` 별칭 대신 `curl.exe`를 사용한다. Schannel의 개발 CA 폐기 정보 부재는 `--ssl-revoke-best-effort`로 처리하며 CA·hostname 검증은 유지한다.
 
 ```powershell
 # 구성을 검증하되 비밀값이 펼쳐진 전체 설정은 출력하지 않는다.
@@ -127,15 +128,15 @@ docker compose -p commerce-search-lab -f compose.yaml up -d elasticsearch
 docker compose -p commerce-search-lab -f compose.yaml ps
 
 # --user elastic은 비밀번호를 인자에 넣지 않고 대화형으로 입력받는다.
-curl.exe --cacert .local/elasticsearch/certs/ca.crt --user elastic --fail --silent --show-error --connect-timeout 5 --max-time 40 'https://localhost:9200/?filter_path=cluster_name,cluster_uuid,version.number'
-curl.exe --cacert .local/elasticsearch/certs/ca.crt --user elastic --fail --silent --show-error --connect-timeout 5 --max-time 40 'https://localhost:9200/_nodes/plugins?filter_path=_nodes.total,_nodes.successful,_nodes.failed,nodes.*.version,nodes.*.plugins.name,nodes.*.plugins.version'
-curl.exe --cacert .local/elasticsearch/certs/ca.crt --user elastic --fail --silent --show-error --connect-timeout 5 --max-time 40 'https://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=30s&filter_path=cluster_name,status,timed_out,number_of_nodes'
+curl.exe -q --noproxy '*' --ssl-revoke-best-effort --cacert .local/elasticsearch/certs/ca.crt --user elastic --fail --silent --show-error --connect-timeout 5 --max-time 40 'https://localhost:9200/?filter_path=cluster_name,cluster_uuid,version.number'
+curl.exe -q --noproxy '*' --ssl-revoke-best-effort --cacert .local/elasticsearch/certs/ca.crt --user elastic --fail --silent --show-error --connect-timeout 5 --max-time 40 'https://localhost:9200/_nodes/plugins?filter_path=_nodes.total,_nodes.successful,_nodes.failed,nodes.*.version,nodes.*.plugins.name,nodes.*.plugins.version'
+curl.exe -q --noproxy '*' --ssl-revoke-best-effort --cacert .local/elasticsearch/certs/ca.crt --user elastic --fail --silent --show-error --connect-timeout 5 --max-time 40 'https://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=30s&filter_path=cluster_name,status,timed_out,number_of_nodes'
 
 # 일반 중지는 개발 데이터를 보존한다.
 docker compose -p commerce-search-lab -f compose.yaml down
 ```
 
-자동 검증은 비밀번호를 프로세스 인자로 확장하지 않는다. Git 제외 curl 설정/자격증명 파일의 경로 또는 비밀값을 노출하지 않는 stdin 전달을 사용한다. raw Authorization 헤더·비밀번호·원본 디버그 로그는 증거에서 제외한다. 현재 위 기동·API 명령은 실행하지 않았다.
+자동 검증은 [Test-Elasticsearch.ps1](../scripts/Test-Elasticsearch.ps1)을 사용한다. 비밀번호를 프로세스 인자로 확장하지 않고 curl의 stdin으로 전달한다. raw Authorization 헤더·비밀번호·원본 디버그 로그는 증거에서 제외한다. 기동 초반 TLS handshake와 보안 인덱스 복구 중 401은 전체 180초 안에서 대기하며, 인증된 응답·버전·노드·green 확인 전에는 통과하지 않는다.
 
 | 검사 | 성공 조건 | 실패 시 처리 |
 |---|---|---|
@@ -155,9 +156,9 @@ docker compose -p commerce-search-lab -f compose.yaml down
 | 작업 | 현재/후속 결과 |
 |---|---|
 | M1-01 | 버전·공식 근거·기존 의존성 관찰·로컬 실행/검증 계약 확정 |
-| M1-02 | 아직 미실행: Dockerfile·Compose·인증서/비밀값 준비, 호스트 조건 조정, ES/Nori 실제 기동·재기동 |
+| M1-02 | Dockerfile·Compose·초기화/검증 스크립트 구현, ES/Nori 실제 기동 검증. 재기동 증거와 호스트 제약은 작업 기록 참고 |
 | M1-03 | 아직 미실행: Client 의존성 추가 후 실제 resolved graph, JSON mapper·전송·인증/TLS 경로, 실제 연결과 종료 처리 |
 | M1-04 | 아직 미실행: 테스트 인덱스의 생성·삭제 격리 |
 | M1-09 | 아직 미실행: Nori 토큰·분석기 동작 확인 |
 
-이번 단위는 문서·환경 계약 작업이다. 형식적인 Red 테스트를 추가하지 않았고 제품 코드·시드·빌드 의존성을 바꾸지 않았다. 이전 118개 테스트 통과는 기존 하네스 증거이며 선택한 ES/Client 조합의 통합 테스트 결과가 아니다.
+M1-01은 문서·환경 계약, M1-02는 설정 전 검사 준비와 실제 컨테이너 검증으로 진행했다. 제품 코드·시드·Gradle 의존성은 바꾸지 않았다. 기존 하네스 118개 통과와 실제 ES/Nori 기동 증거는 구분하며, Client 조합의 연결 검증은 M1-03에 남아 있다.

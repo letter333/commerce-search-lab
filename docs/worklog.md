@@ -5,12 +5,12 @@
 ## 현재 상태
 
 - 목표: 한국어 상품 검색 품질을 같은 데이터와 질의에서 비교하는 검색·백엔드 포트폴리오.
-- 현재 단계: H0와 M1-01 버전·실행 계약 완료, M1-02 엔진 기동 대기. 실제 검색 API·Elasticsearch 색인은 아직 미구현.
+- 현재 단계: H0·M1-01 완료, M1-02 ES/Nori 기동·재기동 검증 완료. 다음은 M1-03 공식 Java Client 연결이다. 실제 검색 API·상품 색인은 아직 미구현.
 - M0 데이터: 가상 상품 50개와 개발 시나리오 30개. 사람의 관련성 판정 재검토는 대기.
 - 기존 스캐폴드: Java 21, Spring Boot 4.1.1, Gradle 9.7.1. 이 버전을 변경하지 않고 하네스를 추가한다.
-- 검색 엔진·Nori·공식 Java Client 버전: ES·Nori 9.4.7 + Java Client·Rest5 9.4.5 선정. [실행 계약](search-engine-setup.md)에 근거를 기록했으며 실제 엔진 기동·연결 검증은 M1-02~03에서 수행한다.
+- 검색 엔진·Nori·공식 Java Client 버전: ES·Nori 9.4.7 실제 기동 확인, Java Client·Rest5 9.4.5 선정. [실행 계약](search-engine-setup.md)과 [로컬 실행 안내](local-elasticsearch.md)를 따르며 Client 연결은 M1-03에서 검증한다.
 - 개발 방식: 기능·버그·동작 변경은 테스트를 먼저 작성하는 TDD(Red → Green → Refactor)로 진행한다.
-- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 작은 단위로 구분했다. M1-01 문서·환경 계약 작업에 착수했으며 제품 기능 구현은 아직 시작하지 않았다.
+- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 작은 단위로 구분했다. M1-02 실행 검증을 완료했으며 전달·PR 머지는 별도 상태로 관리한다. 제품 검색 기능 구현은 아직 시작하지 않았다.
 
 ## H0 · 하네스 완료
 
@@ -136,17 +136,38 @@
 - 환경 관찰: Docker Client/Engine 28.0.1, Compose v2.33.1-desktop.1, Linux x86_64, CPU 20개·메모리 약 11.6GiB, 조회 시 9200/9300 LISTEN 없음. WSL `vm.max_map_count=262144`; 프로젝트 권장 기준 1048576 적용은 M1-02 후속이며 현재 값을 이유로 기동 실패를 주장하지 않는다.
 - 실행 계약: 단일 노드·호스트 loopback 9200, HTTP/transport TLS와 인증 유지, Git 제외 파일로 비밀번호 주입, 컨테이너 2GiB·자동 힙, 데이터 named volume·인증서 보존, 도달성/실제 readiness와 실패 조건 분리. 구체적인 값·명령과 공식 근거는 결과 문서에 있다.
 - 검증 상태: 문서 링크·앵커·공백·101개 작업 ID 유지, 선정 버전 표기와 PowerShell 명령 구문 검사, 조사 산출물·개인키·비밀번호 경로의 Git 제외를 통과했다. 버전/의존성과 실행 계약의 독립 검토를 마쳤으며 인증서 ZIP 출력과 최종 파일 배치 경로를 명확히 했다. 기존 제품/테스트/빌드/시드와 index는 변경하지 않았고 새 동작 테스트나 반복 `check`를 실행하지 않았다. 이전 118개 통과를 새 엔진·Client 검증으로 표시하지 않는다.
-- 미검증/전달: 이미지 pull·빌드·컨테이너 기동·인증서/비밀번호 생성·커널 변경·Client 의존성 추가·실제 검색은 실행하지 않았다. 사용자 전달 요청에 따라 문서 5개를 커밋·푸시하고 [PR #4](https://github.com/letter333/commerce-search-lab/pull/4)를 생성했다. base `main`, head `codex/issue-3-search-engine-contract`. PR OPEN·미머지, 이슈 #3 OPEN이다.
-- 전달 검증: 본문 커밋 `abea9fa1affafc600437d225b8908acd50c5a653`의 원격 SHA 일치, 문서 5개와 최종 index 일치, 링크·앵커·PowerShell 구문·공백·민감정보 제외를 확인했다. 초기 PR 생성 요청은 GitHub 오류를 반환해 모든 PR·이슈 연결을 재조회했고, 미생성을 확인한 뒤 REST API로 PR #4 하나를 생성했다. 후속 전달 기록은 같은 브랜치/PR에 반영한다.
+- 미검증/전달: 이미지 pull·빌드·컨테이너 기동·인증서/비밀번호 생성·커널 변경·Client 의존성 추가·실제 검색은 실행하지 않았다. 사용자 전달 요청에 따라 문서 5개를 커밋·푸시하고 [PR #4](https://github.com/letter333/commerce-search-lab/pull/4)를 생성했다. base `main`, head `codex/issue-3-search-engine-contract`. 이후 사용자 머지 지시를 받아 PR MERGED, 이슈 #3 CLOSED / COMPLETED 상태를 확인했다.
+- 전달 검증: 본문 커밋 `abea9fa1affafc600437d225b8908acd50c5a653`의 원격 SHA 일치, 문서 5개와 최종 index 일치, 링크·앵커·PowerShell 구문·공백·민감정보 제외를 확인했다. 초기 PR 생성 요청은 GitHub 오류를 반환해 모든 PR·이슈 연결을 재조회했고, 미생성을 확인한 뒤 REST API로 PR #4 하나를 생성했다. 후속 전달 기록 커밋 `e155a8124f24ef0ac0c7ac9f3282767b020d0c09`도 같은 브랜치/PR에 반영하고 원격 SHA 일치를 확인했다.
+- 후속 머지: 사용자 지시로 2026-09-25 01:50:02 KST에 PR #4를 `main`으로 머지했다. 기존 두 커밋을 유지하는 merge commit은 `ae23b3abbc888824dba12a9514d976a63c0770d2`다. 실제 MERGED 상태·시각·대상 브랜치를 조회했고 이슈 #3은 01:50:04 KST에 자동 종료됐다. 중복 종료 명령은 실행하지 않았다.
+- 머지 검증/정리: GitGuardian 검사 SUCCESS, 독립 문서 검토와 `git diff --check` 통과. 머지 결과 tree가 검토한 PR head tree와 같고 두 커밋을 포함함을 확인했다. 코드 변경이 없어 테스트를 반복하지 않았다. 깨끗한 작업 트리에서 로컬 `main`을 `origin/main`으로 fast-forward한 뒤 이 머지 기록만 갱신했다. 기록은 로컬 미커밋 상태로 보존하며 기존 작업 브랜치는 유지한다.
 - 임시 조사 산출물: `build/m1-01/runtime-dependencies.txt`, `test-runtime-dependencies.txt`, `jackson-insight.txt`, `dependency-summary.json`. 모두 Git 제외 대상이며 실제 검색 결과가 아니다.
 
-## 다음 작업 · M1-02 Nori 포함 검색 엔진 기동
+## M1-02 · Nori 포함 검색 엔진 기동
 
-- 목적/완료 기준: [실행 계약](search-engine-setup.md)의 ES·Nori 9.4.7 이미지를 Compose로 실행하고, 인증/TLS·정확한 버전·Nori 설치·단일 노드 readiness·재기동 보존을 실제로 확인한다.
-- 착수 전: M1-02 이슈와 모든 상태의 기존 PR을 조회·등록하고 독립 브랜치/PR로 관리한다. 실제 기동 전에 구성을 검사할 명령과 기대 결과를 먼저 준비한다.
-- 준비할 파일: `infra/elasticsearch/Dockerfile`, `compose.yaml`, 비밀값 없는 환경 예시와 인증서 입력 설정. 실제 비밀번호·개인키는 `.local/` 등 Git 제외 경로에만 둔다.
-- 선행 환경: 기동 직전 포트와 Docker 상태를 재확인하고, WSL의 권장 `vm.max_map_count` 적용 방법·영향을 확인해 조정한다. 일반 종료에 볼륨 삭제를 포함하지 않는다.
-- 후속 경계: Client 실제 연결과 의존성 graph 검증은 M1-03, 테스트 인덱스 격리는 M1-04, 실제 Nori 토큰은 M1-09다.
+- 착수: 이슈 [#5](https://github.com/letter333/commerce-search-lab/issues/5), 브랜치 `codex/issue-5-nori-engine`, 기준선 `ae23b3abbc888824dba12a9514d976a63c0770d2`. 모든 상태의 이슈·PR을 확인해 M1-02가 없음을 확인한 뒤 등록했다. 기존 M1-01 머지 기록은 브랜치 전환 전후 파일 해시가 같아 보존했다.
+- 검증 선행: 구성 작성 전 `config --quiet`와 `Test-Elasticsearch.ps1`에서 compose 부재, 구성 후 CA 부재를 확인했다. 실행 정책에 막힌 호출은 미실행으로 구분하고 해당 프로세스에만 `-ExecutionPolicy Bypass`를 적용했다. 환경 오류를 검색 로직의 Red로 기록하지 않는다.
+- 구현: Nori Dockerfile·빌드 allowlist, Compose, 인증서 입력, 초기화·검증 PowerShell 스크립트, Windows secret 권한 보완 wrapper와 [실행 안내](local-elasticsearch.md)를 추가했다. 환경 예시는 값 없는 안내이며 실제 비밀 파일은 `.local/`에서 관리한다.
+- Docker 복구: 착수 시 엔진 중지·WSL 값 65530이었다. 실제 시작 실패는 분석용 stale socket의 Windows 오류 1920이었다. 비필수 WSL 권한 경고를 원인으로 보던 초기 추론은 정정했다. 정상 재시작 시간 초과 후 이번 작업의 프로세스만 정리하고, 소켓 하나만 들어 있는 runtime 폴더를 같은 Docker 경로의 백업 이름으로 보존해 복구했다. 정상 Desktop/WSL 재시작에서도 재현돼 같은 범위로 다시 복구했다. 기존 이미지·볼륨은 유지했고 영구 해결로 표시하지 않는다.
+- 호스트 조치: 복구 후 Engine 28.0.1·Compose 2.33.1, Linux x86_64·CPU 20개·메모리 12423901184 bytes를 확인했다. `/etc/sysctl.conf` 항목 유지와 `.wslconfig` 부팅 인자 적용에도 Docker 시작 후 실제 값이 262144였다. 이번에 추가한 두 영구 설정만 되돌리고 Docker 시작 후 `sysctl -w vm.max_map_count=1048576` 적용·재조회에 성공했다. Desktop/WSL 재시작 후 재적용이 필요하다.
+- 이미지 확보: Docker 내부 R2 CDN 전송은 시간 초과했다. 호스트 curl로 같은 공식 manifest/config/layer를 받아 SHA-256·크기와 압축해제 diff_id를 검증한 archive를 불러왔다. 공식 linux/amd64 manifest는 `sha256:e083ef4f6b3d5d49115f2893e384d07b94c02c17093f6b7f05e9b2d2821a079c`, 기본 이미지 ID는 `sha256:e282267314c936a06e549825f40ab263c206bfca9f29662c6fb9631e180aaf44`다. 이후 Nori 빌드 성공, 최종 이미지 ID는 `sha256:d30a3030b85f5b35ebe449e66624093c03fb965e7f2b5e69fb1c4eeb69f2b8a3`. Docker 인증·프록시·버전은 바꾸지 않았다.
+- 초기화 검증: 이미지 부재 시 파일 생성 없이 실패, 정상 생성, 재실행 시 네 파일 해시 동일, 일부 파일이 없는 상태의 거부·복구 후 해시 동일을 확인했다. 인증서 유효기간과 DNS elasticsearch/es01/localhost·IP 127.0.0.1 전체 SAN을 keytool로 검증했다. 최초 keytool 인자 인용 오류는 수정 후 재실행했다.
+- 첫 기동 실패/보완: ES 9.4.7이 Windows secret의 777 권한을 거부해 exit 1로 종료했다. 읽기 전용 원본을 유지하고 0700 tmpfs의 모드 400·UID/GID 1000:0 복사본 경로를 원래 entrypoint에 전달하도록 수정했다. 실제 권한·소유자, 입력 네 마운트의 읽기 전용, 컨테이너 2GiB와 호스트 loopback 9200만 공개됨을 확인했다. 9300은 호스트에 바인딩하지 않았다.
+- TLS 실패/보완: Schannel이 개발 CA의 폐기 정보 부재로 curl 60을 반환했다. Schannel에서만 best-effort 폐기 조회를 사용해 정상 CA 요청의 401을 확인했고, 잘못된 CA와 SAN에 없는 호스트는 각각 curl 60으로 거부됐다. CA 체인·hostname 검증을 해제하지 않았다.
+- 실제 Green: `powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts/Test-Elasticsearch.ps1 -AsJson` 성공. 인증된 ES·Nori 9.4.7, commerce-search-lab·정상 노드 1개·실패 0개, timed_out=false·green 확인. cluster UUID `UNO3XeASSbifnQAr2cP3fQ`, CA 파일 SHA-256 `4CEE9280C8C599C91A4186708D8DA5BFAD54F4D25AD6BA3AA99AF36FCACFFF3A`.
+- 재기동 검증: down/up 직후 handshake 코드 35와 보안 인덱스 복구 중 401을 각각 관찰했다. 복구 후 같은 비밀번호로 성공하는 것을 확인하고 전체 180초 안에서 준비를 기다리도록 보완했다. 다시 down/up 직후부터 검증해 성공했으며 UUID·CA·버전·인증과 기존 named volume 생성 시각이 같았다. 볼륨 삭제·비밀번호 재설정은 없었다.
+- 회귀 검증: `./gradlew.bat --offline --no-daemon check` 성공. test·verifySeeds 실제 실행의 XML 기준 118개·실패/오류/건너뜀 0개. 최종 코드 보완 후 같은 check도 성공(5개 태스크 up-to-date)했다. JDK·캐시는 프로세스에만 지정했고 제품 코드·시드·Gradle 의존성은 그대로다.
+- 최종 점검: 후보 15개 파일에서 실제 로컬 비밀번호와 개인키·토큰 패턴이 없고 추적된 제외 파일·staged 변경이 없음을 확인했다. 상대 링크 51개, PowerShell 스크립트 2개·문서 명령 블록 10개, wrapper LF와 diff 공백 검사를 통과했다. 독립 리뷰의 차단 사항은 없었다. 재기동 후 tmpfs·모드 400·원본과 복사본 동일, 잘못된 비밀번호의 401, 컨테이너 healthy를 확인했다. 복사본 비교의 최초 cmp 명령은 이미지에 없어 실패했으며 SHA-256을 메모리에서 비교해 확인하고 값·해시는 출력하지 않았다.
+- 증거: 안전한 전후 요약과 이미지 검증은 `build/m1-02/`, 원본 엔진 로그는 `.local/elasticsearch/logs/`에 보관하며 Git 제외다. 구현 완료 시 엔진이 로컬에서 실행 중임을 확인했다.
+- 전달 결과: 사용자 요청으로 구현 커밋 `2d8398bd893c5d33477e10b29f47dfdc5a9600ca`를 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR과 이슈 연결을 다시 조회한 뒤 [PR #6](https://github.com/letter333/commerce-search-lab/pull/6) 하나를 생성했다. base `main`, head `codex/issue-5-nori-engine`, 본문 `Closes #5`와 실제 종료 대상 #5의 연결을 확인했다. PR OPEN, 이슈 #5 OPEN이며 머지·이슈 종료는 아직 수행하지 않았다.
+- 전달 검증: 후보 15개 파일의 독립 범위·민감정보 검토에 차단 사항이 없었다. 최종 index와 검증한 작업 트리 내용이 같고 공백·LF·실제 로컬 비밀번호·개인키·토큰 패턴·추적된 제외 파일 검사를 통과했다. 원격에 없는 구현 커밋 전체도 검사했다. 해당 구현 SHA의 GitGuardian 검사 SUCCESS를 확인했다. 이후 전달 기록만 문서 커밋으로 같은 PR에 반영하며, 코드 변경이 없어 회귀·엔진 검증을 반복하지 않는다.
+
+## 다음 작업 · M1-03 공식 Java Client 연결
+
+- 목적: 선정한 Java Client·Rest5 9.4.5와 Jackson3JsonpMapper를 제품 설정에 연결하고 실제 엔진 버전을 읽는다.
+- 착수: M1-02 전달·머지 상태를 확인한 뒤 해당 작업의 이슈·모든 상태 PR을 조회·등록하고 독립 브랜치에서 진행한다.
+- 먼저 검증: ES 통합 테스트와 기본 check를 분리하고 잘못된 설정 오류·실제 엔진 정보 응답·자원 종료를 테스트부터 구현한다. 엔진 없이 기본 check가 통과하고 통합 테스트 미실행을 성공으로 처리하지 않아야 한다.
+- 의존성: Client 추가 후 실제 resolved graph와 JSON/HTTP/TLS 동작을 확인한다. M1-01 예상 버전 차이를 실제 오류로 단정하지 않는다.
+- 후속 경계: 테스트 인덱스 격리는 M1-04, 실제 Nori 토큰은 M1-09다. M1-02 완료는 상품 검색·품질 검증 완료를 뜻하지 않는다.
 - API는 [평가 계약](evaluation-contract.md)에 맞춘다. 변경이 필요하면 실행기·계약·테스트를 함께 갱신한다.
 - 데이터 관련성은 사람이 재검토한 뒤 검토자·일자·변경 근거를 기록한다. 자동 시드 검사만으로 M0를 완료 처리하지 않는다.
 - 기존에 한 항목으로 적었던 M1-01 실행 환경 고정을 세분화했다. 이후 구현은 [상세 계획의 작업 ID](implementation-plan.md)를 사용하며 실제 결과는 이 작업 기록에 남긴다.

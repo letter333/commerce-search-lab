@@ -1,0 +1,74 @@
+name: commerce-search-lab
+
+services:
+  elasticsearch:
+    build:
+      context: ./infra/elasticsearch
+    image: commerce-search-lab/elasticsearch-nori:9.4.7
+    platform: linux/amd64
+    entrypoint: ["/bin/tini", "--", "/usr/local/bin/local-entrypoint.sh"]
+    command: ["eswrapper"]
+    environment:
+      cluster.name: commerce-search-lab
+      node.name: es01
+      discovery.type: single-node
+      http.host: 0.0.0.0
+      transport.host: 127.0.0.1
+      xpack.security.enabled: "true"
+      xpack.security.autoconfiguration.enabled: "false"
+      xpack.security.http.ssl.enabled: "true"
+      xpack.security.http.ssl.key: certs/es01.key
+      xpack.security.http.ssl.certificate: certs/es01.crt
+      xpack.security.http.ssl.certificate_authorities: certs/ca.crt
+      xpack.security.transport.ssl.enabled: "true"
+      xpack.security.transport.ssl.verification_mode: full
+      xpack.security.transport.ssl.key: certs/es01.key
+      xpack.security.transport.ssl.certificate: certs/es01.crt
+      xpack.security.transport.ssl.certificate_authorities: certs/ca.crt
+      ELASTIC_PASSWORD_FILE: /run/secrets/elastic_password
+    ports:
+      - "127.0.0.1:9200:9200"
+    mem_limit: 2g
+    tmpfs:
+      - /run/local-secrets:rw,noexec,nosuid,nodev,size=65536,mode=0700,uid=1000,gid=0
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - type: bind
+        source: ./.local/elasticsearch/certs/ca.crt
+        target: /usr/share/elasticsearch/config/certs/ca.crt
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./.local/elasticsearch/certs/es01.crt
+        target: /usr/share/elasticsearch/config/certs/es01.crt
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./.local/elasticsearch/certs/es01.key
+        target: /usr/share/elasticsearch/config/certs/es01.key
+        read_only: true
+        bind:
+          create_host_path: false
+    secrets:
+      - elastic_password
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          status="$$(curl -q --noproxy '*' --silent --output /dev/null --write-out '%{http_code}'
+          --cacert config/certs/ca.crt --connect-timeout 3 --max-time 4
+          https://localhost:9200/)" && test "$$status" = "401"
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+
+volumes:
+  es-data:
+    name: commerce-search-lab-es-data
+
+secrets:
+  elastic_password:
+    file: ./.local/elasticsearch/elastic-password.txt

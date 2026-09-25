@@ -6,6 +6,8 @@
 
 기본 개발 환경은 IntelliJ이며, IDE의 프로젝트·Gradle 실행에 JDK 21을 사용한다. 시스템 `JAVA_HOME` 설정을 IntelliJ 개발의 선행 조건으로 두지 않는다. Gradle은 저장소의 Wrapper를 사용한다. 최초 실행에는 배포본·Maven 의존성 다운로드가 필요하며 캐시가 준비된 환경에서는 `--offline`을 사용할 수 있다.
 
+Elasticsearch·Nori의 이미지 빌드·인증서 준비·기동·검증·종료는 [로컬 실행 안내](local-elasticsearch.md)를 따른다. 기본 `check`는 엔진 없이 실행하며 실제 엔진 검증과 결과를 구분한다.
+
 아래 명령을 터미널에서 직접 실행할 때는 해당 프로세스의 `JAVA_HOME`을 JDK 21로 지정하거나 PATH에서 JDK 21의 `java`를 찾을 수 있어야 한다.
 
 ```powershell
