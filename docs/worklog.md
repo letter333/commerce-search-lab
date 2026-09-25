@@ -10,7 +10,7 @@
 - 기존 스캐폴드: Java 21, Spring Boot 4.1.1, Gradle 9.7.1. 이 버전을 변경하지 않고 하네스를 추가한다.
 - 검색 엔진·Nori·공식 Java Client 버전: ES·Nori 9.4.7, Java Client·Rest5 9.4.5의 실제 TLS·인증 연결 확인. [실행 계약](search-engine-setup.md), [로컬 실행 안내](local-elasticsearch.md), [Client 설정](java-client-setup.md)을 따른다.
 - 개발 방식: 기능·버그·동작 변경은 테스트를 먼저 작성하는 TDD(Red → Green → Refactor)로 진행한다.
-- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 작은 단위로 구분했다. M1-02는 머지 완료, M1-03은 로컬 구현·검증 완료이며 커밋·푸시·PR 전달은 아직 수행하지 않았다. 제품 검색 기능 구현은 아직 시작하지 않았다.
+- 상세 구현 순서: [구현 실행 계획 v1](implementation-plan.md). M0 관련성 검토 후속과 M1~M4를 작은 단위로 구분했다. M1-02는 머지 완료, M1-03은 구현·검증·커밋·푸시와 PR #8 작성 완료다. PR은 OPEN이며 GitGuardian의 테스트 경로 오탐 4건으로 검사 실패가 남아 있다. 제품 검색 기능 구현은 아직 시작하지 않았다.
 
 ## H0 · 하네스 완료
 
@@ -202,7 +202,10 @@
 - 민감정보: 실제 비밀번호와 해당 Basic 인증 인코딩, 개인키·토큰 패턴을 변경 후보와 테스트 XML에서 검사했다. 실제 인증 파일·개인키·임시 보고서는 Git 제외 상태다. 테스트 fixture는 개발 엔진과 무관한 **공개 CA 인증서만** 포함하며 생성용 개인키 저장소는 `build/`에 남겼다.
 - 검토: 설정/TLS/자원 수명, 테스트 실행 경계, 문서의 독립 검토를 반영했다. 자원 종료는 일반 컨텍스트 테스트, 실제 연결은 통합 테스트로 구분해 안내했다. 최종 후보 17개 파일의 민감정보 검사, 상대 링크 62개와 diff 공백 검사가 통과했고 추적된 제외 파일·staged 변경은 없었다. 구현·시드 범위를 벗어난 변경과 검색 품질 주장은 없다.
 - 증거: `build/reports/tests/{test,verifySeeds,integrationTest}/`, `build/test-results/`, `build/m1-03/`는 로컬 임시 산출물이며 Git 제외다. 최종 엔진은 실행 중이다.
-- 전달 상태: [이슈 #7](https://github.com/letter333/commerce-search-lab/issues/7)에 완료 체크리스트와 실제 검증 결과를 반영하고 OPEN 상태를 확인했다. 구현·검증 완료, 커밋·푸시·PR 생성은 아직 하지 않았다. 실제 PR 머지 후 이슈 종료를 확인한다.
+- 전달 결과: 사용자 요청으로 구현 커밋 `0035993fcf9b3b051f725882c531406866dc8bf5`를 `origin/codex/issue-7-java-client`에 푸시하고 실제 원격 SHA 일치를 확인했다. 모든 상태의 PR·이슈 타임라인을 다시 확인한 뒤 [PR #8](https://github.com/letter333/commerce-search-lab/pull/8) 하나를 생성했다. base `main`, head `codex/issue-7-java-client`, 변경 17개 파일과 본문 `Closes #7` 및 실제 종료 대상 #7의 연결을 확인했다. PR과 [이슈 #7](https://github.com/letter333/commerce-search-lab/issues/7)은 OPEN이며 아직 머지하지 않았다.
+- 전달 검증: 독립 범위·민감정보 검토에 차단 사항이 없었고, 최종 index가 검증한 작업 트리와 같았다. 원격에 없는 구현 커밋의 모든 새 blob과 메시지, 실제 비밀번호·인증 문자열·개인키·토큰 패턴을 검사했다. 커밋에는 기존 공개 noreply 작성자를 사용했다. 직전 최종 검증 이후 제품 코드·테스트·빌드 구성이 바뀌지 않아 테스트를 반복하지 않았다. 전달 기록은 별도 문서 커밋으로 같은 PR에 반영한다.
+- 원격 보안 검사: GitGuardian이 구현 커밋의 `ElasticsearchPropertiesTest.java` 49·87·99·112행을 Generic Password 4건으로 탐지해 실패했다. 모두 `ElasticsearchProperties`의 비밀번호 **파일 경로** 인수에 넣은 placeholder다. 해당 테스트는 파일을 읽지 않으며 실제 로컬 비밀번호·Basic 인증 인코딩과 불일치함을 재확인했다. 독립 검토도 테스트 경로 오탐으로 판정했지만 원격 검사 실패는 해소되지 않았다. 이 사실을 PR과 이슈에 기록하며 검사 성공으로 보고하지 않는다.
+- 남은 전달 조건: 머지 전 GitGuardian 오탐 판정 처리가 필요하다. 검사 skip·탐지 예외·보호 설정 변경·강제 푸시는 수행하지 않았다. GitGuardian은 [PR의 각 커밋을 검사](https://docs.gitguardian.com/internal-monitoring/prevent/detect-secrets-in-real-time-in-github)하므로 후속 커밋에서 경로 문자열만 바꿔도 이미 전송한 커밋의 탐지는 남는다. 실제 비밀값 노출로 볼 근거는 없으며 자격증명을 교체하지 않았다.
 
 ## 다음 작업 · M1-04 테스트 인덱스 격리
 
